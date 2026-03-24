@@ -70,6 +70,14 @@ Cada endpoint documenta qué relaciones acepta.
 
 **60 requests por minuto por IP.** Al exceder el límite se retorna `429 Too Many Requests`.
 
+Todas las respuestas incluyen headers de rate limiting:
+
+| Header | Descripción |
+|--------|-------------|
+| `X-RateLimit-Limit` | Máximo de requests permitidos por minuto |
+| `X-RateLimit-Remaining` | Requests restantes en la ventana actual |
+| `Retry-After` | Segundos hasta que se reinicie el límite (solo en `429`) |
+
 ## Errores
 
 Todos los errores de la API se retornan en formato JSON:
