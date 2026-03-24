@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HandlesRelationsParam;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VersionValuationsRequest extends FormRequest
 {
+    use HandlesRelationsParam;
+
     public function authorize(): bool
     {
         return true;
@@ -27,8 +30,6 @@ class VersionValuationsRequest extends FormRequest
             $this->merge(['currency' => strtoupper($this->input('currency'))]);
         }
 
-        if ($this->has('relations') && is_string($this->input('relations'))) {
-            $this->merge(['relations' => [$this->input('relations')]]);
-        }
+        $this->prepareRelationsParam();
     }
 }
