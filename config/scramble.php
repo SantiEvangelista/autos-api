@@ -139,7 +139,7 @@ MD,
      * ```
      */
     'servers' => [
-        'Live' => 'https://argautos.com/api',
+        'Live' => 'https://argautos.com/api/v1',
     ],
 
     /**
