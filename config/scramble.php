@@ -32,8 +32,6 @@ return [
         'description' => <<<'MD'
 # Arg Autos API
 
-[← Volver a la página principal](https://argautos.com)
-
 API pública y de solo lectura para consultar **valuaciones del mercado automotor argentino**.
 
 ## Arquitectura
