@@ -93,24 +93,6 @@ curl https://argautos.com/api/v1/versions/42/valuations?currency=ars
 | Documentación | Scramble (OpenAPI 3.1) + Stoplight Elements |
 | Hosting | Railway |
 
-## Desarrollo local
-
-Ver [DOCKER.md](DOCKER.md) para instrucciones completas con Docker.
-
-```bash
-docker compose up -d --build
-docker compose exec app composer install
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate
-npm install && npm run build
-```
-
-### Tests
-
-```bash
-docker compose exec app php artisan test
-```
-
 ## Autor
 
 Desarrollado por [Santiago Evangelista](https://github.com/SantiEvangelista).
