@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ExchangeRateService
 {
@@ -41,7 +42,8 @@ class ExchangeRateService
             }
 
             return $response->json('oficial.value_sell');
-        } catch (\Exception) {
+        } catch (\Throwable $e) {
+            Log::warning('Exchange rate fetch failed', ['error' => $e->getMessage()]);
             return null;
         }
     }
