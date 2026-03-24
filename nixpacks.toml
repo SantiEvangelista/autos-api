@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader", "NODE_ENV=development npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "php artisan view:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"

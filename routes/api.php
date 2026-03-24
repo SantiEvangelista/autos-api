@@ -1,0 +1,19 @@
+<?php
+
+use App\Http\Controllers\Api\BrandController;
+use App\Http\Controllers\Api\CarModelController;
+use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\StatsController;
+use App\Http\Controllers\Api\VersionController;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('v1')->group(function () {
+    Route::get('brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('brands/{brand}/models', [BrandController::class, 'models'])->name('brands.models');
+    Route::get('models/{carModel}/versions', [CarModelController::class, 'versions'])->name('models.versions');
+    Route::get('versions/{version}/valuations', [VersionController::class, 'valuations'])->name('versions.valuations');
+    Route::get('search', SearchController::class)->name('search');
+    Route::get('stats', StatsController::class)->name('stats');
+    Route::get('health', HealthController::class)->name('health');
+});

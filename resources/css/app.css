@@ -1,0 +1,31 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.vue';
+
+@theme {
+    --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --color-cream: #F5EEDC;
+    --color-cream-dark: #EDE4CC;
+    --color-blue: #27548A;
+    --color-blue-light: #3568A2;
+    --color-navy: #183B4E;
+    --color-navy-light: #1E4D66;
+    --color-navy-deep: #0F2A38;
+    --color-gold: #DDA853;
+    --color-gold-light: #E5BA6F;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+    body {
+        background-color: #0F2A38;
+        color: #F5EEDC;
+    }
+}
