@@ -28,8 +28,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
             if ($request->is('api/*')) {
+                $retryAfter = (int) ($e->getHeaders()['Retry-After'] ?? 60);
                 return response()->json([
                     'message' => 'Too many requests. Please try again later.',
+                    'retry_after' => $retryAfter,
+                    'retry_after_unit' => 'seconds',
                 ], 429)->withHeaders($e->getHeaders());
             }
         });

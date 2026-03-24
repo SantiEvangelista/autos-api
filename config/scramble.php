@@ -84,7 +84,7 @@ Todos los errores de la API se retornan en formato JSON:
 
 - `422` — Error de validación: `{ "message": "...", "errors": { "campo": ["..."] } }`
 - `404` — Recurso no encontrado: `{ "message": "Resource not found." }`
-- `429` — Rate limit excedido: `{ "message": "Too many requests. Please try again later." }`
+- `429` — Rate limit excedido: `{ "message": "...", "retry_after": 45, "retry_after_unit": "seconds" }`
 - `503` — Servicio externo no disponible (solo en conversión ARS)
 MD,
     ],

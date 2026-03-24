@@ -27,7 +27,12 @@ it('returns 429 with retry-after and custom message when rate limit is exceeded'
 
     $response->assertStatus(429)
         ->assertJsonPath('message', 'Too many requests. Please try again later.')
+        ->assertJsonStructure(['message', 'retry_after', 'retry_after_unit'])
+        ->assertJsonPath('retry_after_unit', 'seconds')
         ->assertHeader('Retry-After')
         ->assertHeader('X-RateLimit-Limit', 60)
         ->assertHeader('X-RateLimit-Remaining', 0);
+
+    $this->assertIsInt($response->json('retry_after'));
+    $this->assertGreaterThan(0, $response->json('retry_after'));
 });
