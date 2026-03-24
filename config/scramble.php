@@ -138,7 +138,9 @@ MD,
      * ],
      * ```
      */
-    'servers' => null,
+    'servers' => [
+        'Live' => 'https://argautos.com/api',
+    ],
 
     /**
      * Determines how Scramble stores the descriptions of enum cases.
