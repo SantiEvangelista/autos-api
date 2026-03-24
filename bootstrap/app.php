@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*')) {
                 return response()->json([
                     'message' => 'Too many requests. Please try again later.',
-                ], 429);
+                ], 429)->withHeaders($e->getHeaders());
             }
         });
 
