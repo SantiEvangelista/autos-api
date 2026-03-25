@@ -23,7 +23,7 @@ class BrandController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $perPage = min($request->integer('per_page', 50), 100);
+        $perPage = min($request->integer('per_page', 63), 100);
 
         $brands = Brand::orderBy('name')->simplePaginate($perPage);
 
