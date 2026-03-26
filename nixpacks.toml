@@ -1,8 +1,11 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 
+# COMPOSER_NO_DEV=1 ensures dev dependencies (phpspreadsheet etc.) are excluded.
+# Required because Railway's default composer install includes require-dev,
+# and phpspreadsheet needs ext-gd which is not available in the Nixpacks PHP runtime.
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader", "NODE_ENV=development npm ci"]
+cmds = ["COMPOSER_NO_DEV=1 composer install --optimize-autoloader --no-interaction", "NODE_ENV=development npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]
