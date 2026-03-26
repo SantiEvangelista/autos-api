@@ -32,7 +32,6 @@
       <header class="pt-10 sm:pt-16 lg:pt-24 pb-14 sm:pb-20">
         <div class="flex items-center gap-2 mb-5 sm:mb-6 hero-fade" style="animation-delay: 0ms">
           <span class="font-mono text-[10px] sm:text-xs text-gold/80 tracking-[0.2em] sm:tracking-[0.3em] uppercase">API Pública</span>
-          
         </div>
         <h1 class="text-[2.5rem] leading-[1] sm:text-6xl lg:text-7xl xl:text-8xl font-light text-cream mb-5 sm:mb-7 hero-fade" style="animation-delay: 80ms">
           Arg <br>
@@ -62,28 +61,30 @@
       <!-- Divider -->
       <div class="border-t border-cream/8"></div>
 
-      <!-- Endpoints -->
-      <section class="py-12 sm:py-16 lg:py-20">
-        <p class="font-mono text-[10px] sm:text-xs text-cream/30 tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-6 sm:mb-10">Endpoints</p>
-
-        <div class="space-y-0">
-          <div
-            v-for="(ep, i) in endpoints"
-            :key="i"
-            class="group flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-6 py-3.5 sm:py-4 border-b border-cream/6 active:border-gold/20 hover:border-gold/20 transition-colors duration-500"
-          >
-            <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
-              <span class="font-mono text-[10px] sm:text-[11px] font-medium text-navy-deep bg-gold/90 px-1.5 sm:px-2 py-0.5 rounded shrink-0">GET</span>
-              <code class="font-mono text-xs sm:text-sm text-cream/80 group-hover:text-gold transition-colors duration-300 truncate">{{ ep.path }}</code>
-            </div>
-            <span class="text-xs sm:text-sm text-cream/30 sm:ml-auto pl-7 sm:pl-0">{{ ep.desc }}</span>
+      <!-- Docs invitation (replaces endpoints section) -->
+      <section class="py-10 sm:py-14 lg:py-16">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p class="text-sm sm:text-base text-cream/50 font-light">
+              Integrala en tu proyecto
+            </p>
+            <p class="text-xs sm:text-sm text-cream/25 mt-1">
+              Endpoints, ejemplos y guía de uso disponibles en la documentación.
+            </p>
           </div>
-        </div>
-
-        <!-- Base URL hint -->
-        <div class="mt-6 sm:mt-10 flex items-center gap-2.5 sm:gap-3">
-          <span class="font-mono text-[10px] sm:text-xs text-cream/20">Base URL</span>
-          <code class="font-mono text-[10px] sm:text-xs text-cream/40 bg-cream/5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded truncate">{{ baseUrl }}/api/v1</code>
+          <a
+            href="/docs/api"
+            class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg bg-gold/10 border border-gold/20 text-gold text-sm sm:text-base font-medium hover:bg-gold/15 hover:border-gold/30 active:bg-gold/20 transition-all duration-300 shrink-0 self-start sm:self-auto"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            Ver documentación
+          </a>
         </div>
       </section>
 
@@ -96,37 +97,37 @@
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-1.5 sm:mb-2">Probá la API en vivo</h2>
         <p class="text-xs sm:text-sm text-cream/30 mb-8 sm:mb-12">Seleccioná una marca para comenzar a navegar.</p>
 
-        <!-- Breadcrumb -->
-        <div class="flex items-center gap-1.5 sm:gap-2 mb-6 sm:mb-8 flex-wrap" v-if="selected.brand">
+        <!-- Breadcrumb (bigger font, chevrons instead of slashes) -->
+        <div class="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 flex-wrap" v-if="selected.brand">
           <button
             @click="resetTo('brands')"
-            class="font-mono text-[11px] sm:text-xs text-gold/70 active:text-gold hover:text-gold transition-colors"
+            class="text-sm sm:text-base text-gold/70 active:text-gold hover:text-gold transition-colors font-medium"
           >
             Marcas
           </button>
           <template v-if="selected.brand">
-            <span class="text-cream/20 text-xs">/</span>
+            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             <button
               @click="resetTo('models')"
-              class="font-mono text-[11px] sm:text-xs transition-colors"
-              :class="selected.model ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/70'"
+              class="text-sm sm:text-base transition-colors font-medium"
+              :class="selected.model ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/80'"
             >
               {{ selected.brand.name }}
             </button>
           </template>
           <template v-if="selected.model">
-            <span class="text-cream/20 text-xs">/</span>
+            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             <button
               @click="resetTo('versions')"
-              class="font-mono text-[11px] sm:text-xs transition-colors"
-              :class="selected.version ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/70'"
+              class="text-sm sm:text-base transition-colors font-medium"
+              :class="selected.version ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/80'"
             >
               {{ selected.model.name }}
             </button>
           </template>
           <template v-if="selected.version">
-            <span class="text-cream/20 text-xs">/</span>
-            <span class="font-mono text-[11px] sm:text-xs text-cream/70 break-all">{{ selected.version.name }}</span>
+            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            <span class="text-sm sm:text-base text-cream/80 font-medium break-all">{{ selected.version.name }}</span>
           </template>
         </div>
 
@@ -145,16 +146,10 @@
           >ARS</button>
         </div>
 
-        <!-- Request preview -->
-        <div class="bg-navy/60 border border-cream/6 rounded-lg p-3 sm:p-4 mb-6 sm:mb-8 backdrop-blur-sm overflow-hidden">
-          <div class="flex items-center gap-2">
-            <span class="font-mono text-[10px] sm:text-[11px] font-medium text-navy-deep bg-gold/90 px-1.5 sm:px-2 py-0.5 rounded shrink-0">GET</span>
-            <code class="font-mono text-[11px] sm:text-sm text-cream/60 truncate">{{ currentRequestUrl }}</code>
-          </div>
-          <div v-if="loading" class="flex items-center gap-2 mt-2.5 sm:mt-3">
-            <div class="w-3 h-3 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
-            <span class="font-mono text-[10px] sm:text-xs text-cream/30">Cargando...</span>
-          </div>
+        <!-- Loading indicator (minimal, replaces request preview) -->
+        <div v-if="loading" class="flex items-center gap-2.5 mb-6 sm:mb-8">
+          <div class="w-3.5 h-3.5 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
+          <span class="font-mono text-xs sm:text-sm text-cream/30">Cargando...</span>
         </div>
 
         <!-- Error banner -->
@@ -162,18 +157,17 @@
           <p class="font-mono text-[11px] sm:text-xs text-red-400/80">{{ error }}</p>
         </div>
 
-        <!-- Results grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-1.5 sm:gap-2">
+        <!-- Results grid (bigger cards, no technical info) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
           <!-- Brands -->
           <template v-if="currentStep === 'brands'">
             <button
               v-for="brand in explorer.brands"
               :key="brand.id"
               @click="selectBrand(brand)"
-              class="text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
+              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
             >
-              <span class="text-xs sm:text-sm text-cream/80 group-hover:text-cream transition-colors block truncate">{{ brand.name }}</span>
-              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/20 mt-0.5 truncate">/{{ brand.slug }}</span>
+              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block truncate">{{ brand.name }}</span>
             </button>
           </template>
 
@@ -183,10 +177,9 @@
               v-for="model in explorer.models"
               :key="model.id"
               @click="selectModel(model)"
-              class="text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
+              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
             >
-              <span class="text-xs sm:text-sm text-cream/80 group-hover:text-cream transition-colors block truncate">{{ model.name }}</span>
-              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/20 mt-0.5">id: {{ model.id }}</span>
+              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block truncate">{{ model.name }}</span>
             </button>
           </template>
 
@@ -196,10 +189,9 @@
               v-for="version in explorer.versions"
               :key="version.id"
               @click="selectVersion(version)"
-              class="text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group col-span-2 sm:col-span-1"
+              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group col-span-1 sm:col-span-1"
             >
-              <span class="text-xs sm:text-sm text-cream/80 group-hover:text-cream transition-colors block">{{ version.name }}</span>
-              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/20 mt-0.5">id: {{ version.id }}</span>
+              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block">{{ version.name }}</span>
             </button>
           </template>
         </div>
@@ -207,17 +199,17 @@
         <!-- Valuations table -->
         <div v-if="currentStep === 'valuations' && explorer.valuations.length" class="mt-2">
           <div class="bg-cream/[0.03] border border-cream/6 rounded-lg overflow-hidden">
-            <div class="grid grid-cols-2 px-3 sm:px-4 py-2 sm:py-2.5 border-b border-cream/6">
-              <span class="font-mono text-[10px] sm:text-[11px] text-cream/30 uppercase tracking-wider">Año</span>
-              <span class="font-mono text-[10px] sm:text-[11px] text-cream/30 uppercase tracking-wider text-right">Precio ({{ activeCurrency }})</span>
+            <div class="grid grid-cols-2 px-4 sm:px-5 py-2.5 sm:py-3 border-b border-cream/6">
+              <span class="font-mono text-[11px] sm:text-xs text-cream/30 uppercase tracking-wider">Año</span>
+              <span class="font-mono text-[11px] sm:text-xs text-cream/30 uppercase tracking-wider text-right">Precio ({{ activeCurrency }})</span>
             </div>
             <div
               v-for="val in explorer.valuations"
               :key="val.id"
-              class="grid grid-cols-2 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-cream/4 last:border-0 hover:bg-cream/[0.03] transition-colors"
+              class="grid grid-cols-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-cream/4 last:border-0 hover:bg-cream/[0.03] transition-colors"
             >
-              <span class="font-mono text-xs sm:text-sm text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
-              <span class="font-mono text-xs sm:text-sm text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
+              <span class="font-mono text-sm sm:text-base text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
+              <span class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
             </div>
           </div>
           <!-- Exchange rate info -->
@@ -234,7 +226,7 @@
 
         <!-- Empty state -->
         <div v-if="!loading && currentStep === 'valuations' && !explorer.valuations.length" class="text-center py-10 sm:py-12">
-          <p class="text-cream/30 text-xs sm:text-sm">Sin valuaciones disponibles para esta versión.</p>
+          <p class="text-cream/30 text-sm sm:text-base">Sin valuaciones disponibles para esta versión.</p>
         </div>
       </section>
 
@@ -252,30 +244,30 @@
             @input="onSearch"
             type="text"
             placeholder="ej: corolla, hilux 4x4, bmw serie 3..."
-            class="w-full bg-cream/[0.04] border border-cream/10 rounded-lg px-3.5 sm:px-4 py-3 sm:py-3.5 font-mono text-xs sm:text-sm text-cream placeholder-cream/20 outline-none focus:border-gold/40 transition-colors duration-300"
+            class="w-full bg-cream/[0.04] border border-cream/10 rounded-lg px-3.5 sm:px-4 py-3 sm:py-3.5 text-sm sm:text-base text-cream placeholder-cream/20 outline-none focus:border-gold/40 transition-colors duration-300"
           />
           <div v-if="searching" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
             <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
           </div>
         </div>
 
-        <!-- Search results -->
-        <div v-if="searchResults.length" class="mt-4 sm:mt-6 space-y-1.5">
+        <!-- Search results (bigger cards, no technical ids) -->
+        <div v-if="searchResults.length" class="mt-4 sm:mt-6 space-y-2">
           <div
             v-for="r in searchResults"
             :key="r.version_id"
-            class="flex flex-col px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-cream/[0.03] border border-cream/6"
+            class="flex flex-col px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg bg-cream/[0.03] border border-cream/6"
           >
-            <div class="flex items-baseline gap-1.5 sm:gap-2 min-w-0">
-              <span class="text-xs sm:text-sm text-gold/80 shrink-0">{{ r.brand }}</span>
+            <div class="flex items-baseline gap-2 sm:gap-2.5 min-w-0">
+              <span class="text-sm sm:text-base text-gold/80 shrink-0">{{ r.brand }}</span>
               <span class="text-cream/15">&middot;</span>
-              <span class="text-xs sm:text-sm text-cream/70 truncate">{{ r.model }}</span>
+              <span class="text-sm sm:text-base text-cream/70 truncate">{{ r.model }}</span>
             </div>
-            <span class="text-[11px] sm:text-xs text-cream/40 mt-0.5 truncate">{{ r.version }}</span>
+            <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
           </div>
         </div>
         <div v-if="searchQuery.length >= 2 && !searching && !searchResults.length" class="mt-4 sm:mt-6">
-          <p class="text-cream/30 text-xs sm:text-sm">Sin resultados para "{{ searchQuery }}"</p>
+          <p class="text-cream/30 text-sm sm:text-base">Sin resultados para "{{ searchQuery }}"</p>
         </div>
       </section>
 
@@ -285,7 +277,6 @@
           <div class="flex items-center gap-2">
             <span class="font-mono text-[10px] sm:text-xs text-cream/20">Desarrollado por <a href="https://github.com/SantiEvangelista" target="_blank" rel="noopener" class="hover:text-gold/40 text-gold transition-colors">Santiago Evangelista</a></span>
           </div>
-          
           <span class="font-mono text-[10px] sm:text-xs text-cream/15">Cotización USD/ARS por <a href="https://bluelytics.com.ar" target="_blank" rel="noopener" style="color: #03a9f4;" class="hover:text-gold/40 transition-colors">Bluelytics</a></span>
         </div>
       </footer>
@@ -305,15 +296,6 @@ fetch('https://api.github.com/repos/SantiEvangelista/autos-api')
   .then(data => { if (data) githubStars.value = data.stargazers_count })
   .catch(() => {})
 
-const endpoints = [
-  { path: '/api/v1/brands', desc: 'Lista de marcas' },
-  { path: '/api/v1/brands/{id}/models', desc: 'Modelos de una marca' },
-  { path: '/api/v1/models/{id}/versions', desc: 'Versiones de un modelo' },
-  { path: '/api/v1/versions/{id}/valuations', desc: 'Precios por año (USD por defecto)' },
-  { path: '/api/v1/versions/{id}/valuations?currency=ars', desc: 'Precios convertidos a ARS (dólar oficial)' },
-  { path: '/api/v1/search?q={term}', desc: 'Búsqueda general' },
-]
-
 // Stats
 const stats = reactive({ brands: '...', models: '...', versions: '...' })
 
@@ -330,16 +312,6 @@ const currentStep = computed(() => {
 })
 
 const activeCurrency = ref('USD')
-
-const currentRequestUrl = computed(() => {
-  if (selected.version) {
-    const base = `/api/v1/versions/${selected.version.id}/valuations`
-    return activeCurrency.value === 'ARS' ? `${base}?currency=ars` : base
-  }
-  if (selected.model) return `/api/v1/models/${selected.model.id}/versions`
-  if (selected.brand) return `/api/v1/brands/${selected.brand.id}/models`
-  return '/api/v1/brands'
-})
 
 const error = ref(null)
 
