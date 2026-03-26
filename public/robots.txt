@@ -1,4 +1,5 @@
 User-agent: *
-Disallow:
+Disallow: /api/
+Allow: /docs/api
 
 Sitemap: https://argautos.com/sitemap.xml

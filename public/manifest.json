@@ -1,0 +1,42 @@
+{
+    "name": "Arg Autos API — Precios del mercado automotor argentino",
+    "short_name": "ArgAutos",
+    "description": "API REST pública y gratuita con precios actualizados de más de 60 marcas, 600 modelos y 5.800 versiones de autos en Argentina.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#0a0f1c",
+    "theme_color": "#0a0f1c",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "lang": "es-AR",
+    "dir": "ltr",
+    "categories": ["developer", "utilities"],
+    "shortcuts": [
+        {
+            "name": "Documentación API",
+            "short_name": "Docs",
+            "url": "/docs/api",
+            "description": "Documentación interactiva de los endpoints"
+        }
+    ]
+}
