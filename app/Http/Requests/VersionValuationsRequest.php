@@ -21,6 +21,12 @@ class VersionValuationsRequest extends FormRequest
             'format_price' => ['sometimes', 'in:true,false,1,0'],
             'relations' => ['sometimes', 'array'],
             'relations.*' => ['string', 'in:version,model,brand'],
+            'sources' => ['sometimes', 'array'],
+            'sources.*' => ['string', 'in:infoauto,acara,cca'],
+            'history' => ['sometimes', 'in:true,false,1,0'],
+            'from' => ['sometimes', 'date_format:Y-m-d'],
+            'to' => ['sometimes', 'date_format:Y-m-d', 'after_or_equal:from'],
+            'source' => ['sometimes', 'string', 'in:infoauto,acara,cca'],
         ];
     }
 
@@ -31,5 +37,13 @@ class VersionValuationsRequest extends FormRequest
         }
 
         $this->prepareRelationsParam();
+        $this->prepareSourcesParam();
+    }
+
+    private function prepareSourcesParam(): void
+    {
+        if ($this->has('sources') && is_string($this->input('sources'))) {
+            $this->merge(['sources' => array_filter(array_map('trim', explode(',', $this->input('sources'))))]);
+        }
     }
 }

@@ -19,4 +19,9 @@ class Version extends Model
     {
         return $this->hasMany(Valuation::class);
     }
+
+    public function priceSnapshots(): HasMany
+    {
+        return $this->hasMany(PriceSnapshot::class);
+    }
 }

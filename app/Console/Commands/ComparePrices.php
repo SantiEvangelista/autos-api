@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Valuation;
 use App\Services\ExchangeRateService;
+use App\Services\VersionMatcherService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -187,7 +188,7 @@ class ComparePrices extends Command
         $bar = $this->output->createProgressBar(count($entries));
 
         foreach ($entries as $entry) {
-            $valuation = $this->findValuation($entry['brand_slug'], $entry['model_slug'], $entry['version'], $entry['year']);
+            $valuation = $this->findValuation($entry['brand'], $entry['model'], $entry['version'], $entry['year']);
             $bar->advance();
 
             if (!$valuation) {
@@ -312,15 +313,17 @@ class ComparePrices extends Command
         return $rate;
     }
 
-    private function findValuation(string $brandSlug, string $modelSlug, string $versionName, int $year): ?Valuation
+    private function findValuation(string $brandName, string $modelName, string $versionName, int $year): ?Valuation
     {
-        return Valuation::whereHas('version', function ($q) use ($versionName, $modelSlug, $brandSlug) {
-            $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($versionName) . '%'])
-                ->whereHas('carModel', function ($q2) use ($modelSlug, $brandSlug) {
-                    $q2->where('slug', $modelSlug)
-                        ->whereHas('brand', fn ($q3) => $q3->where('slug', $brandSlug));
-                });
-        })->where('year', $year)->first();
+        $matcher = app(VersionMatcherService::class);
+
+        $version = $matcher->findVersion($brandName, $modelName, $versionName);
+
+        if (!$version) {
+            return null;
+        }
+
+        return Valuation::where('version_id', $version->id)->where('year', $year)->first();
     }
 
     private function printResults(array $stats, array $mismatches, float $threshold): void

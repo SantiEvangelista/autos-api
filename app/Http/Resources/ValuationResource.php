@@ -22,6 +22,14 @@ class ValuationResource extends JsonResource
             $data['price_formatted'] = $this->resource->price_formatted;
         }
 
+        if (array_key_exists('acara_price', $this->resource->getAttributes())) {
+            $data['acara_price'] = $this->resource->acara_price;
+        }
+
+        if (isset($this->resource->acara_price_formatted)) {
+            $data['acara_price_formatted'] = $this->resource->acara_price_formatted;
+        }
+
         return $data;
     }
 }
