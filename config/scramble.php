@@ -61,10 +61,18 @@ Navegá entre páginas usando `links.next` y `links.prev`.
 
 ## Relaciones opcionales
 
-Varios endpoints aceptan el parámetro `relations[]` para incluir datos relacionados en la respuesta.
-Por ejemplo: `?relations["brand","model"]` incluye la marca y el modelo en cada versión.
+Varios endpoints aceptan el parámetro `relations` para incluir datos relacionados en la respuesta.
+Se puede enviar como comma-separated o como array:
+
+- `?relations=brand,model` (comma-separated)
+- `?relations[]=brand&relations[]=model` (array)
 
 Cada endpoint documenta qué relaciones acepta.
+
+## Fuentes de precios
+
+El endpoint de valuaciones acepta `sources=acara` para incluir el precio de ACARA junto al precio Infoauto.
+También soporta `history=true` para consultar la evolución de precios en el tiempo.
 
 ## Rate limiting
 

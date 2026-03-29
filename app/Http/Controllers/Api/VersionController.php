@@ -23,11 +23,22 @@ class VersionController extends Controller
      * Retorna las valuaciones (precio por año-modelo) de una versión específica, ordenadas por año descendente.
      * Los precios se almacenan en **USD** y pueden convertirse a **ARS** usando el tipo de cambio oficial (fuente: Bluelytics).
      *
-     * - Usá `currency=ARS` para obtener precios en pesos argentinos.
-     * - Usá `format_price=true` para incluir el precio formateado (ej: `$56.000.000,00` o `US$40.000,00`).
-     * - Usá `relations[]` para incluir metadata de la versión, modelo y/o marca. Valores: `version`, `model`, `brand`.
+     * ## Parámetros
+     *
+     * - `currency=ARS` — Convertir precios a pesos argentinos.
+     * - `format_price=true` — Incluir precio formateado (ej: `$56.000.000,00` o `US$40.000,00`).
+     * - `relations=version,model,brand` — Incluir metadata en `meta`. Acepta comma-separated o `relations[]=version&relations[]=model`.
+     * - `sources=acara` — Incluir `acara_price` de ACARA junto al precio Infoauto. Valores: `infoauto`, `acara`, `cca`.
+     *
+     * ## Modo historial
+     *
+     * - `history=true` — Retorna snapshots de precios con fecha y fuente en vez de valuaciones actuales.
+     * - `from=YYYY-MM-DD` / `to=YYYY-MM-DD` — Filtrar rango de fechas (default: últimos 30 días).
+     * - `source=acara` — Filtrar por fuente en modo history. Valores: `infoauto`, `acara`, `cca`.
      *
      * El año `0` representa vehículos **0km**.
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection<\App\Http\Resources\ValuationResource>
      */
     public function valuations(VersionValuationsRequest $request, Version $version, ExchangeRateService $exchangeRate): JsonResponse|AnonymousResourceCollection
     {
