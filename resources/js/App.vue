@@ -132,7 +132,7 @@
         </div>
 
         <!-- Currency toggle -->
-        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6">
+        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-2 sm:mb-3">
           <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
           <button
             @click="setCurrency('USD')"
@@ -144,6 +144,21 @@
             class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
             :class="activeCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
           >ARS</button>
+        </div>
+
+        <!-- Price source toggle -->
+        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Fuente de precio:</span>
+          <button
+            @click="setSource('api')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeSource === 'api' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >API</button>
+          <button
+            @click="setSource('acara')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeSource === 'acara' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >ACARA</button>
         </div>
 
         <!-- Loading indicator (minimal, replaces request preview) -->
@@ -209,7 +224,8 @@
               class="grid grid-cols-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-cream/4 last:border-0 hover:bg-cream/[0.03] transition-colors"
             >
               <span class="font-mono text-sm sm:text-base text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
-              <span class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
+              <span v-if="activeSource === 'api' || val.acara_price == null" class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
+              <span v-else class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.acara_price) }}</span>
             </div>
           </div>
           <!-- Exchange rate info -->
@@ -228,6 +244,17 @@
         <div v-if="!loading && currentStep === 'valuations' && !explorer.valuations.length" class="text-center py-10 sm:py-12">
           <p class="text-cream/30 text-sm sm:text-base">Sin valuaciones disponibles para esta versión.</p>
         </div>
+
+        <!-- Volver bar -->
+        <div v-if="currentStep === 'valuations'" class="mt-6 sm:mt-8">
+          <button
+            @click="resetTo('brands')"
+            class="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 sm:py-4 rounded-lg bg-gold/10 border border-gold/20 hover:bg-gold/15 hover:border-gold/30 active:bg-gold/20 transition-all duration-300 group"
+          >
+            <svg class="w-4 h-4 text-gold/70 group-hover:text-gold transition-colors duration-300 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            <span class="text-sm sm:text-base text-gold font-medium transition-colors duration-300">Volver a buscar</span>
+          </button>
+        </div>
       </section>
 
       <!-- Divider -->
@@ -236,7 +263,7 @@
       <!-- Search -->
       <section class="py-12 sm:py-16 lg:py-20">
         <p class="font-mono text-[10px] sm:text-xs text-cream/30 tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-2 sm:mb-3">Búsqueda</p>
-        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-6 sm:mb-10">Buscar por texto</h2>
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-6 sm:mb-10">Buscar un auto </h2>
 
         <div class="relative">
           <input
@@ -251,23 +278,112 @@
           </div>
         </div>
 
-        <!-- Search results (bigger cards, no technical ids) -->
+        <!-- Search results (with reference price) -->
         <div v-if="searchResults.length" class="mt-4 sm:mt-6 space-y-2">
           <div
             v-for="r in searchResults"
             :key="r.version_id"
-            class="flex flex-col px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg bg-cream/[0.03] border border-cream/6"
+            class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg bg-cream/[0.03] border border-cream/6"
           >
-            <div class="flex items-baseline gap-2 sm:gap-2.5 min-w-0">
-              <span class="text-sm sm:text-base text-gold/80 shrink-0">{{ r.brand }}</span>
-              <span class="text-cream/15">&middot;</span>
-              <span class="text-sm sm:text-base text-cream/70 truncate">{{ r.model }}</span>
+            <div class="flex flex-col min-w-0 flex-1">
+              <div class="flex items-baseline gap-2 sm:gap-2.5 min-w-0">
+                <span class="text-sm sm:text-base text-gold/80 shrink-0">{{ r.brand }}</span>
+                <span class="text-cream/15">&middot;</span>
+                <span class="text-sm sm:text-base text-cream/70 truncate">{{ r.model }}</span>
+              </div>
+              <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
             </div>
-            <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
+            <div v-if="r.price" class="shrink-0 text-right">
+              <span class="font-mono text-sm sm:text-base text-gold">US${{ formatPrice(r.price) }}</span>
+              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
+            </div>
           </div>
         </div>
         <div v-if="searchQuery.length >= 2 && !searching && !searchResults.length" class="mt-4 sm:mt-6">
           <p class="text-cream/30 text-sm sm:text-base">Sin resultados para "{{ searchQuery }}"</p>
+        </div>
+      </section>
+
+      <!-- Divider -->
+      <div class="border-t border-cream/8"></div>
+
+      <!-- Price Explorer -->
+      <section class="py-12 sm:py-16 lg:py-20">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-2 sm:mb-3">Qué puedo comprar con...</h2>
+        <p class="text-xs sm:text-sm text-cream/30 mb-8 sm:mb-10">Deslizá el control para ver qué vehículos entran en tu presupuesto.</p>
+
+        <!-- Budget display -->
+        <div class="text-center mb-6 sm:mb-8">
+          <span class="text-3xl sm:text-4xl lg:text-5xl font-light text-gold">US$ {{ formatPrice(budget) }}</span>
+        </div>
+
+        <!-- Range slider -->
+        <div class="mb-6 sm:mb-8 px-1">
+          <input
+            type="range"
+            v-model.number="budget"
+            @input="onBudgetChange"
+            min="0"
+            max="200000"
+            step="1000"
+            class="price-slider w-full h-2 rounded-lg appearance-none cursor-pointer bg-cream/10"
+          />
+          <div class="flex justify-between mt-2">
+            <span class="font-mono text-[10px] sm:text-xs text-cream/25">US$ 0</span>
+            <span class="font-mono text-[10px] sm:text-xs text-cream/25">US$ 200.000</span>
+          </div>
+        </div>
+
+        <!-- Year filter -->
+        <div class="flex items-center gap-2 mb-6 sm:mb-8 flex-wrap">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Año:</span>
+          <button
+            v-for="y in availableYears"
+            :key="y ?? 'all'"
+            @click="budgetYear = y; fetchByPrice()"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="budgetYear === y ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >
+            {{ y === null ? 'Todos' : (y === 0 ? '0km' : y) }}
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <div v-if="priceExplorer.loading" class="flex items-center gap-2.5 mb-6">
+          <div class="w-3.5 h-3.5 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
+          <span class="font-mono text-xs sm:text-sm text-cream/30">Buscando...</span>
+        </div>
+
+        <!-- Results count -->
+        <div v-if="priceExplorer.hasSearched && !priceExplorer.loading" class="mb-4">
+          Autos encontrados: {{ priceExplorer.results.length }}<span class="font-mono text-xs text-cream/40"> <br> Se ocultan autos mas economicos para no repetir resultados</span>
+        </div>
+
+        <!-- Results -->
+        <div v-if="priceExplorer.results.length" class="space-y-2">
+          <div
+            v-for="r in priceExplorer.results"
+            :key="r.version_id"
+            class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg bg-cream/[0.03] border border-cream/6"
+          >
+            <div class="flex flex-col min-w-0 flex-1">
+              <div class="flex items-baseline gap-2 sm:gap-2.5 min-w-0">
+                <span class="text-sm sm:text-base text-gold/80 shrink-0">{{ r.brand }}</span>
+                <span class="text-cream/15">&middot;</span>
+                <span class="text-sm sm:text-base text-cream/70 truncate">{{ r.model }}</span>
+              </div>
+              <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
+            </div>
+            <div v-if="r.price" class="shrink-0 text-right">
+              <span class="font-mono text-sm sm:text-base text-gold">US${{ formatPrice(r.price) }}</span>
+              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div v-if="priceExplorer.hasSearched && !priceExplorer.loading && !priceExplorer.results.length" class="text-center py-10 sm:py-12">
+          <p class="text-cream/30 text-sm sm:text-base">No se encontraron vehículos en este rango de precio.</p>
         </div>
       </section>
 
@@ -312,6 +428,7 @@ const currentStep = computed(() => {
 })
 
 const activeCurrency = ref('USD')
+const activeSource = ref('api')
 
 const error = ref(null)
 
@@ -345,7 +462,7 @@ async function selectBrand(brand) {
   selected.brand = brand
   selected.model = null
   selected.version = null
-  const res = await apiFetch(`/api/v1/brands/${brand.id}/models`)
+  const res = await apiFetch(`/api/v1/brands/${brand.id}/models?per_page=100`)
   explorer.models = res.data
 }
 
@@ -362,14 +479,24 @@ async function selectVersion(version) {
 }
 
 async function fetchValuations() {
-  const currParam = activeCurrency.value === 'ARS' ? '?currency=ars' : ''
-  const res = await apiFetch(`/api/v1/versions/${selected.version.id}/valuations${currParam}`)
+  const params = new URLSearchParams()
+  if (activeCurrency.value === 'ARS') params.set('currency', 'ars')
+  if (activeSource.value === 'acara') params.set('sources', 'acara')
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  const res = await apiFetch(`/api/v1/versions/${selected.version.id}/valuations${qs}`)
   explorer.valuations = res.data
   explorer.meta = res.meta
 }
 
 async function setCurrency(currency) {
   activeCurrency.value = currency
+  if (selected.version) {
+    await fetchValuations()
+  }
+}
+
+async function setSource(source) {
+  activeSource.value = source
   if (selected.version) {
     await fetchValuations()
   }
@@ -390,6 +517,46 @@ function resetTo(step) {
 
 function formatPrice(price) {
   return Number(price).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+// Price Explorer
+const priceExplorer = reactive({ results: [], loading: false, hasSearched: false })
+const budget = ref(30000)
+const budgetYear = ref(null)
+const availableYears = [null, 0, 2026, 2025, 2024, 2023, 2022, 2021, 2020]
+let priceExplorerTimeout = null
+
+function onBudgetChange() {
+  clearTimeout(priceExplorerTimeout)
+  priceExplorer.loading = true
+  priceExplorerTimeout = setTimeout(() => fetchByPrice(), 400)
+}
+
+async function fetchByPrice() {
+  const maxPrice = budget.value
+  const minPrice = Math.round(maxPrice * 0.85)
+  const params = new URLSearchParams({ max_price: maxPrice, min_price: minPrice, per_page: '50' })
+  if (budgetYear.value !== null) params.set('year', budgetYear.value)
+  priceExplorer.loading = true
+  priceExplorer.hasSearched = true
+  try {
+    const res = await fetch(`/api/v1/price-explorer?${params}`)
+    const data = await res.json()
+    const raw = data.data || []
+    // Dedup: 1 result per brand+model, keep the one closest to budget
+    const seen = new Map()
+    for (const r of raw) {
+      const key = `${r.brand}|${r.model}`
+      if (!seen.has(key) || Math.abs(r.price - maxPrice) < Math.abs(seen.get(key).price - maxPrice)) {
+        seen.set(key, r)
+      }
+    }
+    priceExplorer.results = [...seen.values()].sort((a, b) => a.price - b.price).slice(0, 25)
+  } catch {
+    priceExplorer.results = []
+  } finally {
+    priceExplorer.loading = false
+  }
 }
 
 // Search
@@ -425,6 +592,27 @@ function onSearch() {
 .hero-fade {
   opacity: 0;
   animation: heroFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Price range slider */
+.price-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  background: #DDA853;
+  cursor: pointer;
+  border: 3px solid #0F2A38;
+  box-shadow: 0 0 8px rgba(221, 168, 83, 0.3);
+}
+.price-slider::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  background: #DDA853;
+  cursor: pointer;
+  border: 3px solid #0F2A38;
+  box-shadow: 0 0 8px rgba(221, 168, 83, 0.3);
 }
 
 /* Custom scrollbar */

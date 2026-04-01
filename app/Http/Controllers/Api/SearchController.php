@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchRequest;
 use App\Http\Resources\SearchResultResource;
+use App\Models\Valuation;
 use App\Models\Version;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -29,6 +30,19 @@ class SearchController extends Controller
 
         $paginated = Version::query()
             ->with(['carModel.brand'])
+            ->addSelect(['versions.*'])
+            ->addSelect(['reference_price' => Valuation::select('price')
+                ->whereColumn('version_id', 'versions.id')
+                ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
+                ->orderBy('year', 'desc')
+                ->limit(1),
+            ])
+            ->addSelect(['reference_year' => Valuation::select('year')
+                ->whereColumn('version_id', 'versions.id')
+                ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
+                ->orderBy('year', 'desc')
+                ->limit(1),
+            ])
             ->where(function ($q) use ($term) {
                 $q->where('name', 'ilike', $term)
                     ->orWhereHas('carModel', fn($q) => $q->where('name', 'ilike', $term))

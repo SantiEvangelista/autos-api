@@ -4,6 +4,7 @@ namespace App\Docs;
 
 use Dedoc\Scramble\Extensions\OperationExtension;
 use Dedoc\Scramble\Support\Generator\Operation;
+use Dedoc\Scramble\Support\Generator\Parameter;
 use Dedoc\Scramble\Support\Generator\Response;
 use Dedoc\Scramble\Support\Generator\Schema;
 use Dedoc\Scramble\Support\Generator\Types\ArrayType;
@@ -21,6 +22,7 @@ class ScrambleExtension extends OperationExtension
         $this->addValuations200($operation, $routeInfo);
         $this->addValuations503($operation, $routeInfo);
         $this->addHealth503($operation, $routeInfo);
+        $this->addMetricsAuth($operation, $routeInfo);
     }
 
     private function addValuations200(Operation $operation, RouteInfo $routeInfo): void
@@ -104,6 +106,30 @@ class ScrambleExtension extends OperationExtension
             ->description('Servicio degradado. Al menos una dependencia crítica (base de datos o Redis) no está disponible.');
 
         $response->setContent('application/json', Schema::fromType($type));
+
+        $operation->addResponse($response);
+    }
+
+    private function addMetricsAuth(Operation $operation, RouteInfo $routeInfo): void
+    {
+        if ($routeInfo->route->getName() !== 'admin.metrics') {
+            return;
+        }
+
+        $headerParam = Parameter::make('X-Admin-Token', 'header')
+            ->setSchema(Schema::fromType((new StringType)->example('tu-token-secreto')))
+            ->required(true)
+            ->description('Token de administrador');
+
+        $operation->addParameters([$headerParam]);
+
+        $errorType = (new ObjectType)
+            ->addProperty('message', (new StringType)->example('Unauthorized.'));
+
+        $response = Response::make(401)
+            ->description('Token ausente o inválido. Se requiere el header `X-Admin-Token` con el valor configurado en `ADMIN_API_TOKEN`.');
+
+        $response->setContent('application/json', Schema::fromType($errorType));
 
         $operation->addResponse($response);
     }

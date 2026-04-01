@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CarModelController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\MetricsController;
+use App\Http\Controllers\Api\PriceExplorerController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\VersionController;
@@ -16,6 +17,7 @@ Route::prefix('v1')->group(function () {
     Route::get('models/{carModel}/versions', [CarModelController::class, 'versions'])->name('models.versions');
     Route::get('versions/{version}/valuations', [VersionController::class, 'valuations'])->name('versions.valuations');
     Route::get('search', SearchController::class)->name('search');
+    Route::get('price-explorer', PriceExplorerController::class)->name('price-explorer');
     Route::get('stats', StatsController::class)->name('stats');
     Route::get('health', HealthController::class)->name('health');
 
