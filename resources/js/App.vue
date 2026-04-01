@@ -391,7 +391,7 @@
       <footer class="py-8 sm:py-10 border-t border-cream/6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
           <div class="flex items-center gap-2">
-            <span class="font-mono text-[10px] sm:text-xs text-cream/20">Desarrollado por <a href="https://github.com/SantiEvangelista" target="_blank" rel="noopener" class="hover:text-gold/40 text-gold transition-colors">Santiago Evangelista</a></span>
+            <span class="font-mono text-[10px] sm:text-xs text-cream/20">Desarrollado por <a href="https://www.linkedin.com/in/santiago-evan/" target="_blank" rel="noopener" class="hover:text-gold/40 text-gold transition-colors">Santiago Evangelista</a></span>
           </div>
           <span class="font-mono text-[10px] sm:text-xs text-cream/15">Cotización USD/ARS por <a href="https://bluelytics.com.ar" target="_blank" rel="noopener" style="color: #03a9f4;" class="hover:text-gold/40 transition-colors">Bluelytics</a></span>
         </div>
