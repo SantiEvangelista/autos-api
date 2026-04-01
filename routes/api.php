@@ -3,9 +3,11 @@
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CarModelController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\MetricsController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\VersionController;
+use App\Http\Middleware\AdminToken;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -16,4 +18,8 @@ Route::prefix('v1')->group(function () {
     Route::get('search', SearchController::class)->name('search');
     Route::get('stats', StatsController::class)->name('stats');
     Route::get('health', HealthController::class)->name('health');
+
+    Route::get('admin/metrics', MetricsController::class)
+        ->middleware(AdminToken::class)
+        ->name('admin.metrics');
 });
