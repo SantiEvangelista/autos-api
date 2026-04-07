@@ -26,11 +26,13 @@ class SearchController extends Controller
     {
         $query = $request->validated('q');
         $perPage = $request->validated('per_page', 25);
-        $term = '%' . $query . '%';
+        $terms = preg_split('/\s+/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
 
-        $paginated = Version::query()
+        $builder = Version::query()
             ->with(['carModel.brand'])
-            ->addSelect(['versions.*'])
+            ->join('car_models', 'car_models.id', '=', 'versions.car_model_id')
+            ->join('brands', 'brands.id', '=', 'car_models.brand_id')
+            ->select(['versions.*'])
             ->addSelect(['reference_price' => Valuation::select('price')
                 ->whereColumn('version_id', 'versions.id')
                 ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
@@ -42,13 +44,18 @@ class SearchController extends Controller
                 ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
                 ->orderBy('year', 'desc')
                 ->limit(1),
-            ])
-            ->where(function ($q) use ($term) {
-                $q->where('name', 'ilike', $term)
-                    ->orWhereHas('carModel', fn($q) => $q->where('name', 'ilike', $term))
-                    ->orWhereHas('carModel.brand', fn($q) => $q->where('name', 'ilike', $term));
-            })
-            ->simplePaginate($perPage);
+            ]);
+
+        foreach ($terms as $word) {
+            $term = '%' . $word . '%';
+            $builder->where(function ($q) use ($term) {
+                $q->where('versions.name', 'ilike', $term)
+                    ->orWhere('car_models.name', 'ilike', $term)
+                    ->orWhere('brands.name', 'ilike', $term);
+            });
+        }
+
+        $paginated = $builder->simplePaginate($perPage);
 
         return SearchResultResource::collection($paginated);
     }

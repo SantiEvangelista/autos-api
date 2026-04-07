@@ -69,6 +69,14 @@ it('returns 422 when query is empty', function () {
     $response->assertStatus(422);
 });
 
+it('searches across brand and model with multi-word query', function () {
+    $response = $this->getJson('/api/v1/search?q=toyota corolla');
+
+    $response->assertOk()->assertJsonCount(2, 'data');
+    $response->assertJsonPath('data.0.brand', 'TOYOTA');
+    $response->assertJsonPath('data.0.model', 'COROLLA');
+});
+
 it('returns empty array for no matches', function () {
     $response = $this->getJson('/api/v1/search?q=lamborghini');
 
