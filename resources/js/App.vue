@@ -30,17 +30,14 @@
 
       <!-- Hero -->
       <header class="pt-10 sm:pt-16 lg:pt-24 pb-14 sm:pb-20">
-        <div class="flex items-center gap-2 mb-5 sm:mb-6 hero-fade" style="animation-delay: 0ms">
-          <span class="font-mono text-[10px] sm:text-xs text-gold/80 tracking-[0.2em] sm:tracking-[0.3em] uppercase">API Pública</span>
-        </div>
-        <h1 class="text-[2.5rem] leading-[1] sm:text-6xl lg:text-7xl xl:text-8xl font-light text-cream mb-5 sm:mb-7 hero-fade" style="animation-delay: 80ms">
-          Arg <br>
-          <span class="font-semibold text-gold">Autos API</span>
-        </h1>
-        <p class="text-base sm:text-lg text-cream/45 max-w-md sm:max-w-xl leading-relaxed font-light hero-fade" style="animation-delay: 160ms">
-          Consultá precios del mercado automotor argentino por marca, modelo, versión y año.
-        </p>
 
+        <h1 class="text-5xl leading-none sm:text-7xl lg:text-8xl xl:text-9xl font-light text-cream mb-6 sm:mb-8 hero-fade" style="animation-delay: 80ms">
+          Arg <br>
+          <span class="font-semibold text-gold">Autos </span>
+        </h1>
+        <p class="text-lg sm:text-2xl text-cream/50 max-w-md sm:max-w-2xl leading-relaxed font-light hero-fade" style="animation-delay: 160ms">
+          Para todos los que queremos saber el precio de un auto en Argentina sin tener que ir a una concesionaria.
+        </p>
         <!-- Stats -->
         <div class="flex gap-8 sm:gap-12 lg:gap-16 mt-10 sm:mt-14 hero-fade" style="animation-delay: 240ms">
           <div>
@@ -89,180 +86,13 @@
       </section>
 
       <!-- Divider -->
-      <div class="border-t border-cream/8"></div>
 
-      <!-- Live Explorer -->
-      <section id="explorador" class="py-12 sm:py-16 lg:py-20">
-        <p class="font-mono text-[10px] sm:text-xs text-cream/30 tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-2 sm:mb-3">Explorador</p>
-        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-1.5 sm:mb-2">Probá la API en vivo</h2>
-        <p class="text-xs sm:text-sm text-cream/30 mb-8 sm:mb-12">Seleccioná una marca para comenzar a navegar.</p>
-
-        <!-- Breadcrumb (bigger font, chevrons instead of slashes) -->
-        <div class="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 flex-wrap" v-if="selected.brand">
-          <button
-            @click="resetTo('brands')"
-            class="text-sm sm:text-base text-gold/70 active:text-gold hover:text-gold transition-colors font-medium"
-          >
-            Marcas
-          </button>
-          <template v-if="selected.brand">
-            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            <button
-              @click="resetTo('models')"
-              class="text-sm sm:text-base transition-colors font-medium"
-              :class="selected.model ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/80'"
-            >
-              {{ selected.brand.name }}
-            </button>
-          </template>
-          <template v-if="selected.model">
-            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            <button
-              @click="resetTo('versions')"
-              class="text-sm sm:text-base transition-colors font-medium"
-              :class="selected.version ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/80'"
-            >
-              {{ selected.model.name }}
-            </button>
-          </template>
-          <template v-if="selected.version">
-            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            <span class="text-sm sm:text-base text-cream/80 font-medium break-all">{{ selected.version.name }}</span>
-          </template>
-        </div>
-
-        <!-- Currency toggle -->
-        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-2 sm:mb-3">
-          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
-          <button
-            @click="setCurrency('USD')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="activeCurrency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >USD</button>
-          <button
-            @click="setCurrency('ARS')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="activeCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >ARS</button>
-        </div>
-
-        <!-- Price source toggle -->
-        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6">
-          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Fuente de precio:</span>
-          <button
-            @click="setSource('api')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="activeSource === 'api' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >API</button>
-          <button
-            @click="setSource('acara')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="activeSource === 'acara' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >ACARA</button>
-        </div>
-
-        <!-- Loading indicator (minimal, replaces request preview) -->
-        <div v-if="loading" class="flex items-center gap-2.5 mb-6 sm:mb-8">
-          <div class="w-3.5 h-3.5 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
-          <span class="font-mono text-xs sm:text-sm text-cream/30">Cargando...</span>
-        </div>
-
-        <!-- Error banner -->
-        <div v-if="error" class="border border-red-500/20 rounded-lg px-3.5 sm:px-4 py-2.5 sm:py-3 mb-4 sm:mb-6 bg-red-500/5">
-          <p class="font-mono text-[11px] sm:text-xs text-red-400/80">{{ error }}</p>
-        </div>
-
-        <!-- Results grid (bigger cards, no technical info) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
-          <!-- Brands -->
-          <template v-if="currentStep === 'brands'">
-            <button
-              v-for="brand in explorer.brands"
-              :key="brand.id"
-              @click="selectBrand(brand)"
-              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
-            >
-              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block truncate">{{ brand.name }}</span>
-            </button>
-          </template>
-
-          <!-- Models -->
-          <template v-if="currentStep === 'models'">
-            <button
-              v-for="model in explorer.models"
-              :key="model.id"
-              @click="selectModel(model)"
-              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
-            >
-              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block truncate">{{ model.name }}</span>
-            </button>
-          </template>
-
-          <!-- Versions -->
-          <template v-if="currentStep === 'versions'">
-            <button
-              v-for="version in explorer.versions"
-              :key="version.id"
-              @click="selectVersion(version)"
-              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group col-span-1 sm:col-span-1"
-            >
-              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block">{{ version.name }}</span>
-            </button>
-          </template>
-        </div>
-
-        <!-- Valuations table -->
-        <div v-if="currentStep === 'valuations' && explorer.valuations.length" class="mt-2">
-          <div class="bg-cream/[0.03] border border-cream/6 rounded-lg overflow-hidden">
-            <div class="grid grid-cols-2 px-4 sm:px-5 py-2.5 sm:py-3 border-b border-cream/6">
-              <span class="font-mono text-[11px] sm:text-xs text-cream/30 uppercase tracking-wider">Año</span>
-              <span class="font-mono text-[11px] sm:text-xs text-cream/30 uppercase tracking-wider text-right">Precio ({{ activeCurrency }})</span>
-            </div>
-            <div
-              v-for="val in explorer.valuations"
-              :key="val.id"
-              class="grid grid-cols-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-cream/4 last:border-0 hover:bg-cream/[0.03] transition-colors"
-            >
-              <span class="font-mono text-sm sm:text-base text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
-              <span v-if="activeSource === 'api' || val.acara_price == null" class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
-              <span v-else class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.acara_price) }}</span>
-            </div>
-          </div>
-          <!-- Exchange rate info -->
-          <div v-if="explorer.meta?.exchange_rate" class="mt-3 flex items-center gap-1.5 flex-wrap">
-            <span class="font-mono text-[10px] sm:text-[11px] text-cream/25">
-              Dólar oficial: ${{ formatPrice(explorer.meta.exchange_rate.ars_per_usd) }} ARS/USD
-            </span>
-            <span class="text-cream/15">&middot;</span>
-            <a href="https://bluelytics.com.ar" target="_blank" rel="noopener" class="font-mono text-[10px] sm:text-[11px] text-cream/25 hover:text-gold/60 transition-colors">
-              cotización por Bluelytics
-            </a>
-          </div>
-        </div>
-
-        <!-- Empty state -->
-        <div v-if="!loading && currentStep === 'valuations' && !explorer.valuations.length" class="text-center py-10 sm:py-12">
-          <p class="text-cream/30 text-sm sm:text-base">Sin valuaciones disponibles para esta versión.</p>
-        </div>
-
-        <!-- Volver bar -->
-        <div v-if="currentStep === 'valuations'" class="mt-6 sm:mt-8">
-          <button
-            @click="resetTo('brands')"
-            class="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 sm:py-4 rounded-lg bg-gold/10 border border-gold/20 hover:bg-gold/15 hover:border-gold/30 active:bg-gold/20 transition-all duration-300 group"
-          >
-            <svg class="w-4 h-4 text-gold/70 group-hover:text-gold transition-colors duration-300 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-            <span class="text-sm sm:text-base text-gold font-medium transition-colors duration-300">Volver a buscar</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Divider -->
+      <p class="font-mono text-[10px] sm:text-xs text-gold/80 py-6 sm:py-8 hero-fade" style="animation-delay: 200ms">Precios de referencia con datos de la CCA y Acara</p>
       <div class="border-t border-cream/8"></div>
 
       <!-- Search -->
       <section class="py-12 sm:py-16 lg:py-20">
-        <p class="font-mono text-[10px] sm:text-xs text-cream/30 tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-2 sm:mb-3">Búsqueda</p>
+        <p class="font-mono text-[10px] sm:text-xs text-cream/30 tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-2 sm:mb-3"></p>
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-6 sm:mb-10">Buscar un auto </h2>
 
         <div class="relative">
@@ -270,7 +100,7 @@
             v-model="searchQuery"
             @input="onSearch"
             type="text"
-            placeholder="ej: corolla, hilux 4x4, bmw serie 3..."
+            placeholder="ej: toyota corolla, hilux 4x4, bmw serie 3..."
             class="w-full bg-cream/[0.04] border border-cream/10 rounded-lg px-3.5 sm:px-4 py-3 sm:py-3.5 text-sm sm:text-base text-cream placeholder-cream/20 outline-none focus:border-gold/40 transition-colors duration-300"
           />
           <div v-if="searching" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
@@ -278,8 +108,26 @@
           </div>
         </div>
 
+        <!-- Search currency toggle -->
+        <div v-if="searchResults.length" class="flex items-center gap-2 mt-4 sm:mt-6 mb-2 sm:mb-3">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
+          <button
+            @click="setSearchCurrency('USD')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="searchCurrency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >USD</button>
+          <button
+            @click="setSearchCurrency('ARS')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="searchCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >ARS</button>
+          <span v-if="searchCurrency === 'ARS' && searchExchangeRate" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
+            Dólar oficial: ${{ formatPrice(searchExchangeRate) }} ARS/USD
+          </span>
+        </div>
+
         <!-- Search results (with reference price) -->
-        <div v-if="searchResults.length" class="mt-4 sm:mt-6 space-y-2">
+        <div v-if="searchResults.length" class="space-y-2">
           <div
             v-for="r in searchResults"
             :key="r.version_id"
@@ -294,7 +142,7 @@
               <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
             </div>
             <div v-if="r.price" class="shrink-0 text-right">
-              <span class="font-mono text-sm sm:text-base text-gold">US${{ formatPrice(r.price) }}</span>
+              <span class="font-mono text-sm sm:text-base text-gold">{{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ formatSearchPrice(r.price) }}</span>
               <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
             </div>
           </div>
@@ -384,6 +232,174 @@
         <!-- Empty state -->
         <div v-if="priceExplorer.hasSearched && !priceExplorer.loading && !priceExplorer.results.length" class="text-center py-10 sm:py-12">
           <p class="text-cream/30 text-sm sm:text-base">No se encontraron vehículos en este rango de precio.</p>
+        </div>
+      </section>
+
+      <!-- Divider -->
+      <div class="border-t border-cream/8"></div>
+
+      <!-- Live Explorer -->
+      <section id="explorador" class="py-12 sm:py-16 lg:py-20">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-1.5 sm:mb-2">Marcas, Modelos y Versiones</h2>
+        <p class="text-xs sm:text-sm text-cream/30 mb-8 sm:mb-12">Seleccioná una Marca , Modelo y Versión para ver los precios y su fuente.</p>
+
+        <!-- Breadcrumb (bigger font, chevrons instead of slashes) -->
+        <div class="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 flex-wrap" v-if="selected.brand">
+          <button
+            @click="resetTo('brands')"
+            class="text-sm sm:text-base text-gold/70 active:text-gold hover:text-gold transition-colors font-medium"
+          >
+            Marcas
+          </button>
+          <template v-if="selected.brand">
+            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            <button
+              @click="resetTo('models')"
+              class="text-sm sm:text-base transition-colors font-medium"
+              :class="selected.model ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/80'"
+            >
+              {{ selected.brand.name }}
+            </button>
+          </template>
+          <template v-if="selected.model">
+            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            <button
+              @click="resetTo('versions')"
+              class="text-sm sm:text-base transition-colors font-medium"
+              :class="selected.version ? 'text-gold/70 active:text-gold hover:text-gold' : 'text-cream/80'"
+            >
+              {{ selected.model.name }}
+            </button>
+          </template>
+          <template v-if="selected.version">
+            <svg class="w-4 h-4 text-cream/20 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            <span class="text-sm sm:text-base text-cream/80 font-medium break-all">{{ selected.version.name }}</span>
+          </template>
+        </div>
+
+        <!-- Currency toggle -->
+        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-2 sm:mb-3">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
+          <button
+            @click="setCurrency('USD')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeCurrency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >USD</button>
+          <button
+            @click="setCurrency('ARS')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >ARS</button>
+        </div>
+
+        <!-- Price source toggle -->
+        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Fuente de precio:</span>
+          <button
+            @click="setSource('api')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeSource === 'api' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >API</button>
+          <button
+            @click="setSource('acara')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeSource === 'acara' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >ACARA</button>
+        </div>
+
+        <!-- Loading indicator -->
+        <div v-if="loading" class="flex items-center gap-2.5 mb-6 sm:mb-8">
+          <div class="w-3.5 h-3.5 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
+          <span class="font-mono text-xs sm:text-sm text-cream/30">Cargando...</span>
+        </div>
+
+        <!-- Error banner -->
+        <div v-if="error" class="border border-red-500/20 rounded-lg px-3.5 sm:px-4 py-2.5 sm:py-3 mb-4 sm:mb-6 bg-red-500/5">
+          <p class="font-mono text-[11px] sm:text-xs text-red-400/80">{{ error }}</p>
+        </div>
+
+        <!-- Results grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
+          <!-- Brands -->
+          <template v-if="currentStep === 'brands'">
+            <button
+              v-for="brand in explorer.brands"
+              :key="brand.id"
+              @click="selectBrand(brand)"
+              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
+            >
+              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block truncate">{{ brand.name }}</span>
+            </button>
+          </template>
+
+          <!-- Models -->
+          <template v-if="currentStep === 'models'">
+            <button
+              v-for="model in explorer.models"
+              :key="model.id"
+              @click="selectModel(model)"
+              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group"
+            >
+              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block truncate">{{ model.name }}</span>
+            </button>
+          </template>
+
+          <!-- Versions -->
+          <template v-if="currentStep === 'versions'">
+            <button
+              v-for="version in explorer.versions"
+              :key="version.id"
+              @click="selectVersion(version)"
+              class="text-left px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 active:border-gold/30 active:bg-cream/[0.06] hover:border-gold/30 hover:bg-cream/[0.06] transition-all duration-300 group col-span-1 sm:col-span-1"
+            >
+              <span class="text-sm sm:text-base text-cream/80 group-hover:text-cream transition-colors block">{{ version.name }}</span>
+            </button>
+          </template>
+        </div>
+
+        <!-- Valuations table -->
+        <div v-if="currentStep === 'valuations' && explorer.valuations.length" class="mt-2">
+          <div class="bg-cream/[0.03] border border-cream/6 rounded-lg overflow-hidden">
+            <div class="grid grid-cols-2 px-4 sm:px-5 py-2.5 sm:py-3 border-b border-cream/6">
+              <span class="font-mono text-[11px] sm:text-xs text-cream/30 uppercase tracking-wider">Año</span>
+              <span class="font-mono text-[11px] sm:text-xs text-cream/30 uppercase tracking-wider text-right">Precio ({{ activeCurrency }})</span>
+            </div>
+            <div
+              v-for="val in explorer.valuations"
+              :key="val.id"
+              class="grid grid-cols-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-cream/4 last:border-0 hover:bg-cream/[0.03] transition-colors"
+            >
+              <span class="font-mono text-sm sm:text-base text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
+              <span v-if="activeSource === 'api' || val.acara_price == null" class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
+              <span v-else class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.acara_price) }}</span>
+            </div>
+          </div>
+          <!-- Exchange rate info -->
+          <div v-if="explorer.meta?.exchange_rate" class="mt-3 flex items-center gap-1.5 flex-wrap">
+            <span class="font-mono text-[10px] sm:text-[11px] text-cream/25">
+              Dólar oficial: ${{ formatPrice(explorer.meta.exchange_rate.ars_per_usd) }} ARS/USD
+            </span>
+            <span class="text-cream/15">&middot;</span>
+            <a href="https://bluelytics.com.ar" target="_blank" rel="noopener" class="font-mono text-[10px] sm:text-[11px] text-cream/25 hover:text-gold/60 transition-colors">
+              cotización por Bluelytics
+            </a>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div v-if="!loading && currentStep === 'valuations' && !explorer.valuations.length" class="text-center py-10 sm:py-12">
+          <p class="text-cream/30 text-sm sm:text-base">Sin valuaciones disponibles para esta versión.</p>
+        </div>
+
+        <!-- Volver bar -->
+        <div v-if="currentStep === 'valuations'" class="mt-6 sm:mt-8">
+          <button
+            @click="resetTo('brands')"
+            class="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 sm:py-4 rounded-lg bg-gold/10 border border-gold/20 hover:bg-gold/15 hover:border-gold/30 active:bg-gold/20 transition-all duration-300 group"
+          >
+            <svg class="w-4 h-4 text-gold/70 group-hover:text-gold transition-colors duration-300 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            <span class="text-sm sm:text-base text-gold font-medium transition-colors duration-300">Volver a buscar</span>
+          </button>
         </div>
       </section>
 
@@ -563,7 +579,34 @@ async function fetchByPrice() {
 const searchQuery = ref('')
 const searchResults = ref([])
 const searching = ref(false)
+const searchCurrency = ref('USD')
+const searchExchangeRate = ref(null)
 let searchTimeout = null
+
+async function fetchSearchExchangeRate() {
+  if (searchExchangeRate.value) return
+  try {
+    const res = await fetch('https://api.bluelytics.com.ar/v2/latest')
+    const data = await res.json()
+    searchExchangeRate.value = data.oficial.value_sell
+  } catch {
+    searchExchangeRate.value = null
+  }
+}
+
+async function setSearchCurrency(currency) {
+  searchCurrency.value = currency
+  if (currency === 'ARS' && !searchExchangeRate.value) {
+    await fetchSearchExchangeRate()
+  }
+}
+
+function formatSearchPrice(priceUsd) {
+  if (searchCurrency.value === 'ARS' && searchExchangeRate.value) {
+    return formatPrice(Number(priceUsd) * searchExchangeRate.value)
+  }
+  return formatPrice(priceUsd)
+}
 
 function onSearch() {
   clearTimeout(searchTimeout)
