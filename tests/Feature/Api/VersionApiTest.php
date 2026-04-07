@@ -143,7 +143,8 @@ it('includes version, model and brand context when relations[]=version&model&bra
     $response = $this->getJson("/api/v1/versions/{$this->version->id}/valuations?relations[]=version&relations[]=model&relations[]=brand");
 
     $response->assertOk()
-        ->assertJsonPath('meta.version', '4P 2.0 SEG CVT')
+        ->assertJsonPath('meta.version', '4P 2.0 Seg CVT')
+        ->assertJsonPath('meta.version_raw', '4P 2.0 SEG CVT')
         ->assertJsonPath('meta.model.name', 'COROLLA')
         ->assertJsonPath('meta.model.slug', 'corolla')
         ->assertJsonPath('meta.brand.name', 'TOYOTA')

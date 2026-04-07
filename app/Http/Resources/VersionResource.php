@@ -17,7 +17,8 @@ class VersionResource extends JsonResource
         return [
             'id' => $this->id,
             'car_model_id' => $this->car_model_id,
-            'name' => $this->name,
+            'name' => $this->display_name,
+            'name_raw' => $this->name,
             'model' => $this->when($include && in_array('model', $relations), fn() => [
                 'name' => $this->carModel->name,
                 'slug' => $this->carModel->slug,

@@ -103,7 +103,8 @@ class VersionController extends Controller
             $version->load('carModel.brand');
 
             if (in_array('version', $relations)) {
-                $meta['version'] = $version->name;
+                $meta['version'] = $version->display_name;
+                $meta['version_raw'] = $version->name;
             }
             if (in_array('model', $relations)) {
                 $meta['model'] = ['name' => $version->carModel->name, 'slug' => $version->carModel->slug];

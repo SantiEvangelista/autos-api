@@ -54,7 +54,7 @@ it('returns correct result structure', function () {
 
     $response->assertOk()
         ->assertJsonStructure([
-            'data' => [['version_id', 'brand', 'brand_slug', 'model', 'model_slug', 'version', 'price', 'price_year']],
+            'data' => [['version_id', 'brand', 'brand_slug', 'model', 'model_slug', 'version', 'version_raw', 'price', 'price_year']],
         ]);
 });
 

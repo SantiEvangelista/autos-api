@@ -14,8 +14,10 @@ it('returns versions for a model', function () {
 
     $response->assertOk()
         ->assertJsonCount(2, 'data')
-        ->assertJsonPath('data.0.name', '4P 1.8 XLI')
-        ->assertJsonPath('data.1.name', '4P 2.0 XEI CVT');
+        ->assertJsonPath('data.0.name', '4P 1.8 Xli')
+        ->assertJsonPath('data.0.name_raw', '4P 1.8 XLI')
+        ->assertJsonPath('data.1.name', '4P 2.0 Xei CVT')
+        ->assertJsonPath('data.1.name_raw', '4P 2.0 XEI CVT');
 });
 
 it('returns version fields: id, car_model_id, name', function () {
@@ -26,7 +28,7 @@ it('returns version fields: id, car_model_id, name', function () {
     $response = $this->getJson("/api/v1/models/{$model->id}/versions");
 
     $response->assertOk()
-        ->assertJsonStructure(['data' => [['id', 'car_model_id', 'name']]]);
+        ->assertJsonStructure(['data' => [['id', 'car_model_id', 'name', 'name_raw']]]);
 });
 
 it('returns 404 for non-existent model', function () {

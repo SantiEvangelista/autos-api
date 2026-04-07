@@ -17,7 +17,8 @@ class SearchResultResource extends JsonResource
             'brand_slug' => $this->carModel->brand->slug,
             'model' => $this->carModel->name,
             'model_slug' => $this->carModel->slug,
-            'version' => $this->name,
+            'version' => $this->display_name,
+            'version_raw' => $this->name,
             'price' => $this->reference_price,
             'price_year' => $this->reference_year !== null ? (int) $this->reference_year : null,
         ];

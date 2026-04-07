@@ -23,7 +23,8 @@ it('searches by version name', function () {
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.version', '4P 2.0 XEI CVT');
+        ->assertJsonPath('data.0.version', '4P 2.0 Xei CVT')
+        ->assertJsonPath('data.0.version_raw', '4P 2.0 XEI CVT');
 });
 
 it('searches by model name', function () {
@@ -53,7 +54,7 @@ it('returns correct result structure', function () {
     $response = $this->getJson('/api/v1/search?q=corolla');
 
     $response->assertOk()
-        ->assertJsonStructure(['data' => [['version_id', 'brand', 'brand_slug', 'model', 'model_slug', 'version']]]);
+        ->assertJsonStructure(['data' => [['version_id', 'brand', 'brand_slug', 'model', 'model_slug', 'version', 'version_raw']]]);
 });
 
 it('returns 422 when query is less than 2 characters', function () {
