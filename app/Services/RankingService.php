@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class RankingService
 {
     private const CACHE_KEY = 'rankings:data';
-    private const CACHE_TTL_SECONDS = 21600; // 6 hours
+    private const CACHE_TTL_SECONDS = 86400; // 24 hours
 
     public function __construct(
         private ExchangeRateService $exchangeRateService,
@@ -25,6 +25,7 @@ class RankingService
     private function compute(): array
     {
         $snapshotDates = $this->getLastTwoSnapshotDates();
+        $latestUsedYear = Valuation::where('year', '>', 0)->max('year');
 
         return [
             'cheapest_0km' => $this->cheapest0km(),
@@ -34,8 +35,8 @@ class RankingService
             'brand_most_variety' => $this->brandMostVariety(),
             'biggest_price_increase' => $this->biggestPriceChange($snapshotDates, 'increase'),
             'biggest_price_decrease' => $this->biggestPriceChange($snapshotDates, 'decrease'),
-            'most_aggressive_depreciation' => $this->mostAggressiveDepreciation(),
-            'least_depreciation' => $this->leastDepreciation(),
+            'most_aggressive_depreciation' => $this->depreciationExtreme($latestUsedYear, 'asc'),
+            'least_depreciation' => $this->depreciationExtreme($latestUsedYear, 'desc'),
             'average_0km_price' => $this->average0kmPrice(),
             'most_expensive_brand_avg' => $this->brandByAvgPrice('desc'),
             'most_affordable_brand_avg' => $this->brandByAvgPrice('asc'),
@@ -76,6 +77,7 @@ class RankingService
     private function mostExpensive0km(): ?array
     {
         $val = Valuation::where('year', 0)
+            ->where('price', '>', 0)
             ->orderByDesc('price')
             ->with('version.carModel.brand')
             ->first();
@@ -95,7 +97,8 @@ class RankingService
 
     private function mostExpensiveOverall(): ?array
     {
-        $val = Valuation::orderByDesc('price')
+        $val = Valuation::where('price', '>', 0)
+            ->orderByDesc('price')
             ->with('version.carModel.brand')
             ->first();
 
@@ -163,7 +166,7 @@ class RankingService
                 (curr.price - prev.price) as diff,
                 ROUND(((curr.price - prev.price) / prev.price) * 100, 2) as diff_pct
             ')
-            ->orderBy('diff', $orderDirection)
+            ->orderBy('diff_pct', $orderDirection)
             ->limit(1)
             ->first();
 
@@ -189,54 +192,8 @@ class RankingService
         ];
     }
 
-    private function mostAggressiveDepreciation(): ?array
+    private function depreciationExtreme(?int $latestYear, string $order): ?array
     {
-        $latestYear = Valuation::where('year', '>', 0)->max('year');
-
-        if (! $latestYear) {
-            return null;
-        }
-
-        $result = DB::table('valuations as v0')
-            ->join('valuations as v1', function ($join) use ($latestYear) {
-                $join->on('v0.version_id', '=', 'v1.version_id')
-                    ->where('v1.year', $latestYear);
-            })
-            ->join('versions', 'versions.id', '=', 'v0.version_id')
-            ->join('car_models', 'car_models.id', '=', 'versions.car_model_id')
-            ->join('brands', 'brands.id', '=', 'car_models.brand_id')
-            ->where('v0.year', 0)
-            ->where('v0.price', '>', 0)
-            ->selectRaw('
-                brands.name as brand_name,
-                car_models.name as model_name,
-                versions.name as version_name,
-                v0.price as price_0km,
-                v1.price as price_1yr,
-                ROUND(((v1.price - v0.price) / v0.price) * 100, 2) as diff_pct
-            ')
-            ->orderBy('diff_pct')
-            ->limit(1)
-            ->first();
-
-        if (! $result) {
-            return null;
-        }
-
-        return [
-            'brand' => $result->brand_name,
-            'model' => $result->model_name,
-            'version' => VersionDisplayService::humanize($result->version_name),
-            'price_0km' => (float) $result->price_0km,
-            'price_1yr' => (float) $result->price_1yr,
-            'diff_pct' => (float) $result->diff_pct,
-        ];
-    }
-
-    private function leastDepreciation(): ?array
-    {
-        $latestYear = Valuation::where('year', '>', 0)->max('year');
-
         if (! $latestYear) {
             return null;
         }
@@ -260,7 +217,7 @@ class RankingService
                 v1.price as price_1yr,
                 ROUND(((v1.price - v0.price) / v0.price) * 100, 2) as diff_pct
             ')
-            ->orderByDesc('diff_pct')
+            ->orderBy('diff_pct', $order)
             ->limit(1)
             ->first();
 
