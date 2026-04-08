@@ -191,5 +191,9 @@
             <p><a href="{{ config('app.url') }}/docs/api">Documentación de la API</a></p>
         </footer>
     </noscript>
+
+    <script>
+        window.__RANKINGS__ = @json($rankings);
+    </script>
 </body>
 </html>

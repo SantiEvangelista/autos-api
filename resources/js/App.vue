@@ -266,6 +266,12 @@
       <!-- Divider -->
       <div class="border-t border-cream/8"></div>
 
+      <!-- Ranking -->
+      <RankingTable />
+
+      <!-- Divider -->
+      <div class="border-t border-cream/8"></div>
+
       <!-- Live Explorer -->
       <section id="explorador" class="py-12 sm:py-16 lg:py-20">
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-1.5 sm:mb-2">Marcas, Modelos y Versiones</h2>
@@ -496,6 +502,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import RankingTable from './components/RankingTable.vue'
 
 const baseUrl = window.location.origin
 
