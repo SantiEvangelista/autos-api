@@ -87,13 +87,14 @@
 
       <!-- Divider -->
 
-      <p class="font-mono text-[10px] sm:text-xs text-gold/80 py-6 sm:py-8 hero-fade" style="animation-delay: 200ms">Precios de referencia con datos de la CCA y Acara</p>
+      <p class="font-mono text-sm sm:text-base text-gold/80 py-6 sm:py-8 hero-fade" style="animation-delay: 200ms">Precios de referencia con datos de la CCA y Acara</p>
       <div class="border-t border-cream/8"></div>
 
       <!-- Search -->
       <section class="py-12 sm:py-16 lg:py-20">
         <p class="font-mono text-[10px] sm:text-xs text-cream/30 tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-2 sm:mb-3"></p>
-        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-6 sm:mb-10">Buscar un auto </h2>
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-1.5 sm:mb-2">Buscar un auto </h2>
+        <p class="text-xs sm:text-sm text-cream/30 mb-5 sm:mb-8">Toca un resultado para ver el detalle completo</p>
 
         <div class="relative">
           <input
@@ -127,11 +128,12 @@
         </div>
 
         <!-- Search results (with reference price) -->
-        <div v-if="searchResults.length" class="space-y-2">
+        <div v-if="searchResults.length" class="space-y-2.5 sm:space-y-3">
           <div
-            v-for="r in searchResults"
+            v-for="r in paginatedSearchResults"
             :key="r.version_id"
-            class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg bg-cream/[0.03] border border-cream/6"
+            @click="openModal(r)"
+            class="group flex items-center gap-4 sm:gap-5 px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 hover:bg-cream/[0.06] hover:border-gold/25 transition-all duration-300 cursor-pointer"
           >
             <div class="flex flex-col min-w-0 flex-1">
               <div class="flex items-baseline gap-2 sm:gap-2.5 min-w-0">
@@ -145,7 +147,33 @@
               <span class="font-mono text-sm sm:text-base text-gold">{{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ formatSearchPrice(r.price) }}</span>
               <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
             </div>
+            <svg class="w-4 h-4 shrink-0 text-cream/15 group-hover:text-gold/60 transition-colors duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </div>
+        </div>
+
+        <!-- Search pagination -->
+        <div v-if="totalSearchPages > 1" class="flex items-center justify-center gap-1.5 mt-6">
+          <button
+            @click="goToSearchPage(currentSearchPage - 1)"
+            :disabled="currentSearchPage === 1"
+            class="px-2.5 py-1.5 rounded text-cream/40 hover:text-cream/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button
+            v-for="page in totalSearchPages"
+            :key="page"
+            @click="goToSearchPage(page)"
+            class="font-mono text-xs px-2.5 py-1 rounded transition-colors cursor-pointer"
+            :class="page === currentSearchPage ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >{{ page }}</button>
+          <button
+            @click="goToSearchPage(currentSearchPage + 1)"
+            :disabled="currentSearchPage === totalSearchPages"
+            class="px-2.5 py-1.5 rounded text-cream/40 hover:text-cream/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
         </div>
         <div v-if="searchQuery.length >= 2 && !searching && !searchResults.length" class="mt-4 sm:mt-6">
           <p class="text-cream/30 text-sm sm:text-base">Sin resultados para "{{ searchQuery }}"</p>
@@ -414,10 +442,60 @@
       </footer>
     </div>
   </div>
+
+  <!-- Info Modal -->
+  <Teleport to="body">
+    <div
+      v-if="modalResult"
+      @click.self="closeModal"
+      class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-navy-deep/80 backdrop-blur-sm"
+    >
+      <div class="relative w-full max-w-md bg-navy-deep border border-cream/10 rounded-xl p-6 sm:p-8 shadow-2xl">
+        <!-- Close -->
+        <button @click="closeModal" class="absolute top-4 right-4 text-cream/30 hover:text-cream/70 transition-colors cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <!-- Brand -->
+        <span class="font-mono text-[10px] sm:text-xs text-gold/60 tracking-wider uppercase">{{ modalResult.brand }}</span>
+
+        <!-- Model -->
+        <h3 class="text-xl sm:text-2xl font-light text-cream mt-1">{{ modalResult.model }}</h3>
+
+        <!-- Version (humanized) -->
+        <p class="text-sm sm:text-base text-cream/50 mt-1">{{ modalResult.version }}</p>
+
+        <!-- Divider -->
+        <div class="border-t border-cream/8 my-4 sm:my-5"></div>
+
+        <!-- Price -->
+        <div v-if="modalResult.price" class="flex items-baseline justify-between">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30 uppercase tracking-wider">Precio referencia</span>
+          <div class="text-right">
+            <span class="font-mono text-lg sm:text-xl text-gold">
+              {{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ formatSearchPrice(modalResult.price) }}
+            </span>
+            <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">
+              {{ modalResult.price_year === 0 ? '0 km' : modalResult.price_year }}
+            </span>
+          </div>
+        </div>
+        <div v-else class="text-cream/30 text-sm">Precio no disponible</div>
+
+        <!-- Version raw -->
+        <div class="mt-4 sm:mt-5">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/20 tracking-wider uppercase">Nombre tecnico</span>
+          <p class="font-mono text-xs sm:text-sm text-cream/40 mt-0.5">{{ modalResult.version_raw }}</p>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 
 const baseUrl = window.location.origin
 
@@ -608,6 +686,25 @@ function formatSearchPrice(priceUsd) {
   return formatPrice(priceUsd)
 }
 
+// Search pagination
+const ITEMS_PER_PAGE = 6
+const currentSearchPage = ref(1)
+
+const paginatedSearchResults = computed(() => {
+  const start = (currentSearchPage.value - 1) * ITEMS_PER_PAGE
+  return searchResults.value.slice(start, start + ITEMS_PER_PAGE)
+})
+
+const totalSearchPages = computed(() =>
+  Math.ceil(searchResults.value.length / ITEMS_PER_PAGE)
+)
+
+function goToSearchPage(page) {
+  if (page >= 1 && page <= totalSearchPages.value) {
+    currentSearchPage.value = page
+  }
+}
+
 function onSearch() {
   clearTimeout(searchTimeout)
   if (searchQuery.value.length < 2) {
@@ -615,6 +712,7 @@ function onSearch() {
     return
   }
   searching.value = true
+  currentSearchPage.value = 1
   searchTimeout = setTimeout(async () => {
     try {
       const res = await apiFetch(`/api/v1/search?q=${encodeURIComponent(searchQuery.value)}&per_page=50`)
@@ -624,6 +722,19 @@ function onSearch() {
     }
   }, 300)
 }
+
+// Modal
+const modalResult = ref(null)
+function openModal(result) { modalResult.value = result }
+function closeModal() { modalResult.value = null }
+
+function handleKeydown(e) {
+  if (e.key === 'Escape' && modalResult.value) closeModal()
+}
+onMounted(() => document.addEventListener('keydown', handleKeydown))
+onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
+
+watch(modalResult, (val) => { document.body.style.overflow = val ? 'hidden' : '' })
 </script>
 
 <style>
