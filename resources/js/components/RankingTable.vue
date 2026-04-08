@@ -31,7 +31,7 @@
     <div class="hidden md:block">
       <!-- Header -->
       <div class="grid grid-cols-[1fr_auto] gap-4 px-5 py-2.5 mb-1">
-        <span class="font-mono text-[11px] text-cream/30 uppercase tracking-wider">Estadistica</span>
+        <span class="font-mono text-[11px] text-cream/30 uppercase tracking-wider"></span>
         <span class="font-mono text-[11px] text-cream/30 uppercase tracking-wider text-right"></span>
       </div>
 
