@@ -39,19 +39,14 @@ class ContactController extends Controller
             return response()->json(['message' => 'Verificación de seguridad fallida. Intentá de nuevo.'], 422);
         }
 
-        // Queue the email to avoid SMTP timeout on the HTTP request
-        $mailData = [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'body' => "Nombre: {$validated['name']}\nEmail: {$validated['email']}\n\n{$validated['message']}",
-        ];
+        $body = "Nombre: {$validated['name']}\n"
+            ."Email: {$validated['email']}\n\n"
+            .$validated['message'];
 
-        dispatch(function () use ($mailData) {
-            Mail::raw($mailData['body'], function ($mail) use ($mailData) {
-                $mail->to(config('mail.from.address'))
-                    ->replyTo($mailData['email'], $mailData['name'])
-                    ->subject("Contacto ArgAutos: {$mailData['name']}");
-            });
+        Mail::raw($body, function ($mail) use ($validated) {
+            $mail->to(config('mail.from.address'))
+                ->replyTo($validated['email'], $validated['name'])
+                ->subject("Contacto ArgAutos: {$validated['name']}");
         });
 
         Log::info('Contact form submitted', ['name' => $validated['name'], 'email' => $validated['email']]);
