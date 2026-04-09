@@ -787,7 +787,12 @@ async function submitContact() {
     })
     const data = await res.json()
     if (!res.ok) {
-      contactError.value = data.message || 'Error al enviar. Intentá de nuevo.'
+      if (data.errors) {
+        const firstError = Object.values(data.errors).flat()[0]
+        contactError.value = firstError || 'Error al enviar. Intentá de nuevo.'
+      } else {
+        contactError.value = data.message || 'Error al enviar. Intentá de nuevo.'
+      }
       return
     }
     contactSuccess.value = true

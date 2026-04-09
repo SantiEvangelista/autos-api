@@ -24,6 +24,8 @@ class ContactController extends Controller
             'email' => 'required|email|max:255|indisposable',
             'message' => 'required|string|max:2000',
             'cf_turnstile_response' => 'required|string',
+        ], [
+            'email.indisposable' => 'No se permiten emails temporales o descartables.',
         ]);
 
         // Verify Turnstile token
@@ -37,15 +39,19 @@ class ContactController extends Controller
             return response()->json(['message' => 'Verificación de seguridad fallida. Intentá de nuevo.'], 422);
         }
 
-        // Send the email
-        $body = "Nombre: {$validated['name']}\n"
-            ."Email: {$validated['email']}\n\n"
-            .$validated['message'];
+        // Queue the email to avoid SMTP timeout on the HTTP request
+        $mailData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'body' => "Nombre: {$validated['name']}\nEmail: {$validated['email']}\n\n{$validated['message']}",
+        ];
 
-        Mail::raw($body, function ($mail) use ($validated) {
-            $mail->to(config('mail.from.address'))
-                ->replyTo($validated['email'], $validated['name'])
-                ->subject("Contacto ArgAutos: {$validated['name']}");
+        dispatch(function () use ($mailData) {
+            Mail::raw($mailData['body'], function ($mail) use ($mailData) {
+                $mail->to(config('mail.from.address'))
+                    ->replyTo($mailData['email'], $mailData['name'])
+                    ->subject("Contacto ArgAutos: {$mailData['name']}");
+            });
         });
 
         Log::info('Contact form submitted', ['name' => $validated['name'], 'email' => $validated['email']]);
