@@ -10,7 +10,8 @@
         "dedoc/scramble": "^0.13.16",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^3.0"
+        "laravel/tinker": "^3.0",
+        "propaganistas/laravel-disposable-email": "^2.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

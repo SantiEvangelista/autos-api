@@ -259,6 +259,8 @@
     <script>
         window.__RANKINGS__ = @json($rankings);
         window.__BODY_TYPES__ = @json($bodyTypes);
+        window.__TURNSTILE_SITE_KEY__ = @json(config('app.turnstile_site_key'));
     </script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </body>
 </html>

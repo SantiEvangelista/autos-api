@@ -17,6 +17,9 @@
           <a href="/docs/api" class="font-mono text-[11px] sm:text-xs text-cream/40 active:text-gold hover:text-gold transition-colors duration-300">
             Documentación
           </a>
+          <button @click="showContact = true" class="font-mono text-[11px] sm:text-xs text-gold active:text-gold/70 hover:text-gold-light transition-colors duration-300 cursor-pointer">
+            Contacto
+          </button>
           <a href="https://github.com/SantiEvangelista/autos-api" target="_blank" rel="noopener" class="flex items-center gap-1.5 font-mono text-[11px] sm:text-xs text-cream/40 active:text-gold hover:text-gold transition-colors duration-300">
             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             <span>GitHub</span>
@@ -421,10 +424,105 @@
       </div>
     </div>
   </Teleport>
+
+  <!-- Contact Modal -->
+  <Teleport to="body">
+    <Transition name="contact-modal">
+      <div
+        v-if="showContact"
+        @click.self="closeContact"
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-md"
+      >
+        <div class="relative w-full max-w-lg bg-navy-deep border border-gold/15 rounded-xl p-6 sm:p-8 shadow-[0_0_60px_rgba(221,168,83,0.08)]">
+          <!-- Close -->
+          <button @click="closeContact" class="absolute top-4 right-4 text-cream/30 hover:text-cream/70 transition-colors cursor-pointer">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+
+          <!-- Header -->
+          <div class="mb-6">
+            <span class="font-mono text-[10px] sm:text-xs text-gold/60 tracking-[0.2em] uppercase">Contacto</span>
+            <h3 class="text-xl sm:text-2xl font-light text-cream mt-1">Enviame un mensaje</h3>
+            <p class="text-xs sm:text-sm text-cream/30 mt-1">Sugerencias, bugs, ideas — todo suma.</p>
+          </div>
+
+          <!-- Success state -->
+          <div v-if="contactSuccess" class="text-center py-8">
+            <div class="w-12 h-12 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-6 h-6 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <p class="text-cream text-base font-light">Mensaje enviado</p>
+            <p class="text-cream/30 text-sm mt-1">Gracias por escribir, te respondo pronto.</p>
+          </div>
+
+          <!-- Form -->
+          <form v-else @submit.prevent="submitContact" class="space-y-4">
+            <!-- Honeypot — invisible to humans -->
+            <input type="text" name="website" v-model="contactForm.website" class="absolute opacity-0 pointer-events-none h-0 w-0 -z-10" tabindex="-1" autocomplete="off" />
+
+            <div>
+              <label class="font-mono text-[10px] sm:text-xs text-cream/40 tracking-wider uppercase block mb-1.5">Nombre</label>
+              <input
+                v-model="contactForm.name"
+                type="text"
+                required
+                maxlength="100"
+                class="w-full bg-cream/[0.04] border border-cream/10 rounded-lg px-3.5 py-2.5 text-sm text-cream placeholder-cream/20 outline-none focus:border-gold/40 transition-colors duration-300"
+                placeholder="Tu nombre"
+              />
+            </div>
+
+            <div>
+              <label class="font-mono text-[10px] sm:text-xs text-cream/40 tracking-wider uppercase block mb-1.5">Email</label>
+              <input
+                v-model="contactForm.email"
+                type="email"
+                required
+                maxlength="255"
+                class="w-full bg-cream/[0.04] border border-cream/10 rounded-lg px-3.5 py-2.5 text-sm text-cream placeholder-cream/20 outline-none focus:border-gold/40 transition-colors duration-300"
+                placeholder="tu@email.com"
+              />
+            </div>
+
+            <div>
+              <label class="font-mono text-[10px] sm:text-xs text-cream/40 tracking-wider uppercase block mb-1.5">Mensaje</label>
+              <textarea
+                v-model="contactForm.message"
+                required
+                maxlength="2000"
+                rows="4"
+                style="resize: none;"
+                class="w-full bg-cream/[0.04] border border-cream/10 rounded-lg px-3.5 py-2.5 text-sm text-cream placeholder-cream/20 outline-none focus:border-gold/40 transition-colors duration-300"
+                placeholder="Escribí tu mensaje..."
+              ></textarea>
+            </div>
+
+            <!-- Turnstile widget -->
+            <div ref="turnstileRef"></div>
+
+            <!-- Error -->
+            <p v-if="contactError" class="font-mono text-[11px] text-red-400/80">{{ contactError }}</p>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              :disabled="contactSending"
+              class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-gold/15 border border-gold/25 text-gold text-sm font-medium hover:bg-gold/20 hover:border-gold/35 active:bg-gold/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 cursor-pointer"
+            >
+              <div v-if="contactSending" class="w-3.5 h-3.5 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
+              <span>{{ contactSending ? 'Enviando...' : 'Enviar mensaje' }}</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import RankingTable from './components/RankingTable.vue'
 import PriceExplorer from './components/PriceExplorer.vue'
 
@@ -619,13 +717,101 @@ const modalResult = ref(null)
 function openModal(result) { modalResult.value = result }
 function closeModal() { modalResult.value = null }
 
+// Contact modal
+const showContact = ref(false)
+const contactSending = ref(false)
+const contactSuccess = ref(false)
+const contactError = ref(null)
+const contactForm = reactive({ name: '', email: '', message: '', website: '' })
+const turnstileRef = ref(null)
+let turnstileWidgetId = null
+let turnstileToken = null
+
+function renderTurnstile() {
+  if (!turnstileRef.value || !window.turnstile) return
+  if (turnstileWidgetId !== null) {
+    window.turnstile.reset(turnstileWidgetId)
+    return
+  }
+  turnstileWidgetId = window.turnstile.render(turnstileRef.value, {
+    sitekey: window.__TURNSTILE_SITE_KEY__,
+    theme: 'dark',
+    callback: (token) => { turnstileToken = token },
+    'expired-callback': () => { turnstileToken = null },
+  })
+}
+
+function closeContact() {
+  showContact.value = false
+  contactSuccess.value = false
+  contactError.value = null
+  if (turnstileWidgetId !== null && window.turnstile) {
+    window.turnstile.remove(turnstileWidgetId)
+    turnstileWidgetId = null
+  }
+  turnstileToken = null
+}
+
+watch(showContact, (val) => {
+  if (val) {
+    nextTick(() => {
+      const tryRender = () => {
+        if (window.turnstile) renderTurnstile()
+        else setTimeout(tryRender, 200)
+      }
+      tryRender()
+    })
+  }
+})
+
+async function submitContact() {
+  contactError.value = null
+
+  if (!turnstileToken) {
+    contactError.value = 'Esperá a que se complete la verificación de seguridad.'
+    return
+  }
+
+  contactSending.value = true
+  try {
+    const res = await fetch('/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        name: contactForm.name,
+        email: contactForm.email,
+        message: contactForm.message,
+        website: contactForm.website,
+        cf_turnstile_response: turnstileToken,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      contactError.value = data.message || 'Error al enviar. Intentá de nuevo.'
+      return
+    }
+    contactSuccess.value = true
+    contactForm.name = ''
+    contactForm.email = ''
+    contactForm.message = ''
+  } catch {
+    contactError.value = 'Error de conexión. Intentá de nuevo.'
+  } finally {
+    contactSending.value = false
+  }
+}
+
 function handleKeydown(e) {
-  if (e.key === 'Escape' && modalResult.value) closeModal()
+  if (e.key === 'Escape') {
+    if (showContact.value) closeContact()
+    else if (modalResult.value) closeModal()
+  }
 }
 onMounted(() => document.addEventListener('keydown', handleKeydown))
 onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 watch(modalResult, (val) => { document.body.style.overflow = val ? 'hidden' : '' })
+watch(showContact, (val) => { document.body.style.overflow = val ? 'hidden' : '' })
 </script>
 
 <style>
@@ -659,6 +845,16 @@ watch(modalResult, (val) => { document.body.style.overflow = val ? 'hidden' : ''
   border: 3px solid #0F2A38;
   box-shadow: 0 0 8px rgba(221, 168, 83, 0.3);
 }
+
+/* Contact modal transition */
+.contact-modal-enter-active { transition: opacity 0.25s ease; }
+.contact-modal-enter-active > div { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease; }
+.contact-modal-leave-active { transition: opacity 0.15s ease; }
+.contact-modal-leave-active > div { transition: transform 0.15s ease, opacity 0.15s ease; }
+.contact-modal-enter-from { opacity: 0; }
+.contact-modal-enter-from > div { transform: translateY(16px) scale(0.97); opacity: 0; }
+.contact-modal-leave-to { opacity: 0; }
+.contact-modal-leave-to > div { transform: translateY(8px) scale(0.98); opacity: 0; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 4px; }
