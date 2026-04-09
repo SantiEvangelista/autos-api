@@ -1,5 +1,41 @@
+# Reglas por defecto para todos los crawlers
 User-agent: *
 Disallow: /api/
 Allow: /docs/api
+
+# AI Crawlers — acceso explicito a paginas publicas
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Allow: /docs/api
+Crawl-delay: 2
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+Allow: /docs/api
+Crawl-delay: 2
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /api/
+Allow: /docs/api
+Crawl-delay: 2
+
+User-agent: CCBot
+Allow: /
+Disallow: /api/
+Allow: /docs/api
+Crawl-delay: 2
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Allow: /docs/api
+Crawl-delay: 2
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
 
 Sitemap: https://argautos.com/sitemap.xml

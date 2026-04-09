@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Arg Autos API — Precios de autos en Argentina | Consulta por marca, modelo y año</title>
-    <meta name="description" content="API REST pública y gratuita con precios actualizados del mercado automotor argentino. Consultá valuaciones de más de 60 marcas, 600 modelos y 5.800 versiones de autos 0km y usados. Conversión en tiempo real de USD a ARS con cotización dólar oficial vía Bluelytics. Ideal para concesionarias, apps de compraventa, seguros y desarrolladores.">
+    <title>Arg Autos — Precios de autos en Argentina</title>
+    <meta name="description" content="Consultá gratis el precio de tu auto en Argentina. Valuaciones de más de 60 marcas y 5.800 versiones de 0km y usados con conversión USD/ARS en tiempo real.">
     <meta name="keywords" content="precios autos argentina, valuación automotor, API autos argentina, precios 0km, autos usados argentina, cotización autos, mercado automotor, consulta precios vehículos, API REST automotriz, precios por marca modelo año">
     <meta name="author" content="Santiago Evangelista">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -12,6 +12,8 @@
 
     {{-- #6 Canonical dinamico basado en la URL actual --}}
     <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="alternate" hreflang="es-AR" href="{{ url()->current() }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
 
     {{-- #2 Open Graph con imagen --}}
     <meta property="og:type" content="website">
@@ -86,6 +88,33 @@
     }
     </script>
 
+    {{-- Schema.org JSON-LD: WebApplication (usuario casual) --}}
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebApplication",
+        "name": "Arg Autos — Consulta de precios de autos en Argentina",
+        "url": "{{ config('app.url') }}",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Consultá el precio de tu auto en Argentina. Buscador de precios por marca, modelo y versión con más de 60 marcas y 5.800 versiones.",
+        "inLanguage": "es-AR",
+        "offers": {
+            "@@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "featureList": [
+            "Búsqueda de precios por marca, modelo y versión",
+            "Explorador de precios por presupuesto",
+            "Estadísticas del mercado automotor argentino",
+            "Conversión USD/ARS en tiempo real",
+            "Precios de autos 0km y usados"
+        ]
+    }
+    </script>
+
     {{-- #5 Schema.org JSON-LD: BreadcrumbList --}}
     <script type="application/ld+json">
     {
@@ -137,6 +166,30 @@
                     "@@type": "Answer",
                     "text": "La API provee marcas, modelos, versiones y valuaciones por año-modelo del mercado automotor argentino. Los precios están en USD con conversión a ARS usando cotización dólar oficial en tiempo real vía Bluelytics."
                 }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Cuánto vale mi auto en Argentina hoy?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Podés consultar el valor de tu auto en Argentina buscando por marca, modelo y versión en Arg Autos. Los precios se actualizan mensualmente con datos de la CCA (ex InfoAuto) y ACARA, con conversión a pesos argentinos en tiempo real usando la cotización del dólar oficial."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Dónde puedo ver los precios de autos 0km en Argentina?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "En Arg Autos podés ver los precios de más de 5.800 versiones de autos 0km en Argentina. Los precios están en dólares con conversión a pesos usando la cotización del dólar oficial. También podés explorar autos por presupuesto usando el buscador de precios."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Cómo se calculan los precios de los autos usados?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y autos usados de distintos años."
+                }
             }
         ]
     }
@@ -159,32 +212,43 @@
     {{-- #7 HTML semantico --}}
     <main id="app"></main>
 
-    {{-- #1 Contenido estatico para bots/crawlers que no ejecutan JS --}}
+    {{-- #1 Contenido estatico AEO para bots/crawlers que no ejecutan JS --}}
     <noscript>
         <header>
-            <h1>Arg Autos API — Precios de autos en Argentina</h1>
-            <p>API REST pública y gratuita con precios actualizados del mercado automotor argentino. Consultá valuaciones de más de 60 marcas, 600 modelos y 5.800 versiones de autos 0km y usados.</p>
+            <h1>Precios de autos en Argentina — Arg Autos</h1>
+            <p><strong>Consultá gratis el precio de tu auto.</strong> Arg Autos tiene valuaciones actualizadas de más de 60 marcas, 600 modelos y 5.800 versiones de autos 0km y usados en Argentina, con conversión de USD a pesos en tiempo real.</p>
         </header>
         <section>
-            <h2>Endpoints disponibles</h2>
+            <h2>¿Cuánto vale mi auto en Argentina?</h2>
+            <p>Podés conocer el valor de tu auto buscando por marca, modelo y versión. Los precios se actualizan mensualmente con datos de la CCA (ex InfoAuto) y ACARA. Los valores están en dólares con conversión automática a pesos argentinos usando la cotización del dólar oficial.</p>
+        </section>
+        <section>
+            <h2>Endpoints de la API</h2>
             <ul>
-                <li><code>GET /api/v1/brands</code> — Lista de marcas</li>
+                <li><code>GET /api/v1/brands</code> — Lista de las 60+ marcas disponibles</li>
                 <li><code>GET /api/v1/brands/{id}/models</code> — Modelos de una marca</li>
                 <li><code>GET /api/v1/models/{id}/versions</code> — Versiones de un modelo</li>
                 <li><code>GET /api/v1/versions/{id}/valuations</code> — Precios por año (USD por defecto)</li>
                 <li><code>GET /api/v1/versions/{id}/valuations?currency=ars</code> — Precios en ARS (dólar oficial)</li>
-                <li><code>GET /api/v1/search?q={term}</code> — Búsqueda general</li>
+                <li><code>GET /api/v1/search?q={término}</code> — Búsqueda general</li>
+                <li><code>GET /api/v1/price-explorer?min_price=X&max_price=Y</code> — Explorador por presupuesto</li>
             </ul>
             <p>Base URL: <code>{{ config('app.url') }}/api/v1</code></p>
         </section>
         <section>
             <h2>Preguntas frecuentes</h2>
             <h3>¿Cómo consultar el precio de un auto en Argentina?</h3>
-            <p>Podés consultar precios actualizados del mercado automotor argentino usando la API REST gratuita de Arg Autos API. Buscá por marca, modelo, versión y año-modelo con conversión USD/ARS en tiempo real.</p>
+            <p>Podés consultar precios actualizados del mercado automotor argentino usando Arg Autos. Buscá por marca, modelo, versión y año-modelo con conversión USD/ARS en tiempo real.</p>
             <h3>¿La API de precios de autos es gratuita?</h3>
-            <p>Sí, Arg Autos API es completamente gratuita. Ofrece acceso a valuaciones de más de 60 marcas, 600 modelos y 5.800 versiones de vehículos 0km y usados en Argentina.</p>
+            <p>Sí, Arg Autos es completamente gratuita. Ofrece acceso a valuaciones de más de 60 marcas, 600 modelos y 5.800 versiones de vehículos 0km y usados en Argentina.</p>
             <h3>¿Qué datos ofrece la API de autos?</h3>
             <p>La API provee marcas, modelos, versiones y valuaciones por año-modelo del mercado automotor argentino. Los precios están en USD con conversión a ARS usando cotización dólar oficial en tiempo real vía Bluelytics.</p>
+            <h3>¿Cuánto vale mi auto en Argentina hoy?</h3>
+            <p>Podés consultar el valor de tu auto buscando por marca, modelo y versión en Arg Autos. Los precios se actualizan mensualmente con datos de la CCA (ex InfoAuto) y ACARA, con conversión a pesos argentinos en tiempo real.</p>
+            <h3>¿Dónde puedo ver los precios de autos 0km en Argentina?</h3>
+            <p>En Arg Autos podés ver los precios de más de 5.800 versiones de autos 0km en Argentina. Los precios están en dólares con conversión a pesos usando la cotización del dólar oficial.</p>
+            <h3>¿Cómo se calculan los precios de los autos usados?</h3>
+            <p>Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y usados.</p>
         </section>
         <footer>
             <p>Desarrollado por <a href="https://github.com/SantiEvangelista">Santiago Evangelista</a></p>
