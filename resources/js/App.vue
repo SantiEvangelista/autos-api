@@ -184,127 +184,7 @@
       <div class="border-t border-cream/8"></div>
 
       <!-- Price Explorer -->
-      <section class="py-12 sm:py-16 lg:py-20">
-        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-light text-cream mb-2 sm:mb-3">Qué puedo comprar con...</h2>
-        <p class="text-xs sm:text-sm text-cream/30 mb-8 sm:mb-10">Deslizá el control para ver qué vehículos entran en tu presupuesto.</p>
-
-        <!-- Budget display -->
-        <div class="text-center mb-6 sm:mb-8">
-          <span class="text-3xl sm:text-4xl lg:text-5xl font-light text-gold">US$ {{ formatPrice(budget) }}</span>
-        </div>
-
-        <!-- Range slider -->
-        <div class="mb-6 sm:mb-8 px-1">
-          <input
-            type="range"
-            v-model.number="budget"
-            @input="onBudgetChange"
-            min="0"
-            max="200000"
-            step="1000"
-            class="price-slider w-full h-2 rounded-lg appearance-none cursor-pointer bg-cream/10"
-          />
-          <div class="flex justify-between mt-2">
-            <span class="font-mono text-[10px] sm:text-xs text-cream/25">US$ 0</span>
-            <span class="font-mono text-[10px] sm:text-xs text-cream/25">US$ 200.000</span>
-          </div>
-        </div>
-
-        <!-- Year filter -->
-        <div class="flex items-center gap-2 mb-6 sm:mb-8 flex-wrap">
-          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Año:</span>
-          <button
-            v-for="y in availableYears"
-            :key="y ?? 'all'"
-            @click="budgetYear = y; fetchByPrice()"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="budgetYear === y ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >
-            {{ y === null ? 'Todos' : (y === 0 ? '0km' : y) }}
-          </button>
-        </div>
-
-        <!-- Loading -->
-        <div v-if="priceExplorer.loading" class="flex items-center gap-2.5 mb-6">
-          <div class="w-3.5 h-3.5 border border-gold/50 border-t-gold rounded-full animate-spin"></div>
-          <span class="font-mono text-xs sm:text-sm text-cream/30">Buscando...</span>
-        </div>
-
-        <!-- Price Explorer currency toggle -->
-        <div v-if="priceExplorer.results.length" class="flex items-center gap-2 mb-4">
-          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
-          <button
-            @click="setPriceExplorerCurrency('USD')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="priceExplorerCurrency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >USD</button>
-          <button
-            @click="setPriceExplorerCurrency('ARS')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="priceExplorerCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >ARS</button>
-          <span v-if="priceExplorerCurrency === 'ARS' && searchExchangeRate" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
-            Dólar oficial: ${{ formatPrice(searchExchangeRate) }} ARS/USD
-          </span>
-        </div>
-
-        <!-- Results count -->
-        <div v-if="priceExplorer.hasSearched && !priceExplorer.loading" class="mb-4">
-          Autos encontrados: {{ priceExplorer.results.length }}<span class="font-mono text-xs text-cream/40"> <br> Se ocultan autos mas economicos para no repetir resultados</span>
-        </div>
-
-        <!-- Results -->
-        <div v-if="priceExplorer.results.length" class="space-y-2">
-          <div
-            v-for="r in paginatedPriceResults"
-            :key="r.version_id"
-            class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg bg-cream/[0.03] border border-cream/6"
-          >
-            <div class="flex flex-col min-w-0 flex-1">
-              <div class="flex items-baseline gap-2 sm:gap-2.5 min-w-0">
-                <span class="text-sm sm:text-base text-gold/80 shrink-0">{{ r.brand }}</span>
-                <span class="text-cream/15">&middot;</span>
-                <span class="text-sm sm:text-base text-cream/70 truncate">{{ r.model }}</span>
-              </div>
-              <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
-            </div>
-            <div v-if="r.price" class="shrink-0 text-right">
-              <span class="font-mono text-sm sm:text-base text-gold">{{ priceExplorerCurrency === 'USD' ? 'US$' : '$' }}{{ formatPriceExplorerPrice(r.price) }}</span>
-              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Price Explorer pagination -->
-        <div v-if="totalPricePages > 1" class="flex items-center justify-center gap-1.5 mt-6">
-          <button
-            @click="goToPricePage(currentPricePage - 1)"
-            :disabled="currentPricePage === 1"
-            class="px-2.5 py-1.5 rounded text-cream/40 hover:text-cream/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <button
-            v-for="page in totalPricePages"
-            :key="page"
-            @click="goToPricePage(page)"
-            class="font-mono text-xs px-2.5 py-1 rounded transition-colors cursor-pointer"
-            :class="page === currentPricePage ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >{{ page }}</button>
-          <button
-            @click="goToPricePage(currentPricePage + 1)"
-            :disabled="currentPricePage === totalPricePages"
-            class="px-2.5 py-1.5 rounded text-cream/40 hover:text-cream/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-
-        <!-- Empty state -->
-        <div v-if="priceExplorer.hasSearched && !priceExplorer.loading && !priceExplorer.results.length" class="text-center py-10 sm:py-12">
-          <p class="text-cream/30 text-sm sm:text-base">No se encontraron vehículos en este rango de precio.</p>
-        </div>
-      </section>
+      <PriceExplorer />
 
       <!-- Divider -->
       <div class="border-t border-cream/8"></div>
@@ -546,6 +426,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import RankingTable from './components/RankingTable.vue'
+import PriceExplorer from './components/PriceExplorer.vue'
 
 const baseUrl = window.location.origin
 
@@ -661,83 +542,6 @@ function resetTo(step) {
 
 function formatPrice(price) {
   return Number(price).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-// Price Explorer
-const priceExplorer = reactive({ results: [], loading: false, hasSearched: false })
-const budget = ref(30000)
-const budgetYear = ref(null)
-const availableYears = [null, 0, 2026, 2025, 2024, 2023, 2022, 2021, 2020]
-let priceExplorerTimeout = null
-
-function onBudgetChange() {
-  clearTimeout(priceExplorerTimeout)
-  priceExplorer.loading = true
-  priceExplorerTimeout = setTimeout(() => fetchByPrice(), 400)
-}
-
-async function fetchByPrice() {
-  const maxPrice = budget.value
-  const minPrice = Math.round(maxPrice * 0.85)
-  const params = new URLSearchParams({ max_price: maxPrice, min_price: minPrice, per_page: '50' })
-  if (budgetYear.value !== null) params.set('year', budgetYear.value)
-  priceExplorer.loading = true
-  priceExplorer.hasSearched = true
-  currentPricePage.value = 1
-  try {
-    const res = await fetch(`/api/v1/price-explorer?${params}`)
-    const data = await res.json()
-    const raw = data.data || []
-    // Dedup: 1 result per brand+model, keep the one closest to budget
-    const seen = new Map()
-    for (const r of raw) {
-      const key = `${r.brand}|${r.model}`
-      if (!seen.has(key) || Math.abs(r.price - maxPrice) < Math.abs(seen.get(key).price - maxPrice)) {
-        seen.set(key, r)
-      }
-    }
-    priceExplorer.results = [...seen.values()].sort((a, b) => a.price - b.price).slice(0, 25)
-  } catch {
-    priceExplorer.results = []
-  } finally {
-    priceExplorer.loading = false
-  }
-}
-
-// Price Explorer pagination
-const PRICE_ITEMS_PER_PAGE = 6
-const currentPricePage = ref(1)
-
-const paginatedPriceResults = computed(() => {
-  const start = (currentPricePage.value - 1) * PRICE_ITEMS_PER_PAGE
-  return priceExplorer.results.slice(start, start + PRICE_ITEMS_PER_PAGE)
-})
-
-const totalPricePages = computed(() =>
-  Math.ceil(priceExplorer.results.length / PRICE_ITEMS_PER_PAGE)
-)
-
-function goToPricePage(page) {
-  if (page >= 1 && page <= totalPricePages.value) {
-    currentPricePage.value = page
-  }
-}
-
-// Price Explorer currency
-const priceExplorerCurrency = ref('USD')
-
-async function setPriceExplorerCurrency(currency) {
-  priceExplorerCurrency.value = currency
-  if (currency === 'ARS' && !searchExchangeRate.value) {
-    await fetchSearchExchangeRate()
-  }
-}
-
-function formatPriceExplorerPrice(priceUsd) {
-  if (priceExplorerCurrency.value === 'ARS' && searchExchangeRate.value) {
-    return formatPrice(Number(priceUsd) * searchExchangeRate.value)
-  }
-  return formatPrice(priceUsd)
 }
 
 // Search

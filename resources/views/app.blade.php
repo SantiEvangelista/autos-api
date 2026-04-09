@@ -258,6 +258,7 @@
 
     <script>
         window.__RANKINGS__ = @json($rankings);
+        window.__BODY_TYPES__ = @json($bodyTypes);
     </script>
 </body>
 </html>

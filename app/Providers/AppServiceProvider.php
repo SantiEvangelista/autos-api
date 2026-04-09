@@ -26,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('app', function ($view) {
             $view->with('rankings', app(RankingService::class)->getCached());
+            $view->with('bodyTypes', config('body-types'));
         });
     }
 }
