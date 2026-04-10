@@ -45,7 +45,7 @@ export function usePriceExplorer() {
 
   // Currency
   const currency = ref('USD')
-  const exchangeRate = ref(null)
+  const exchangeRates = ref({ oficial: null, blue: null })
 
   // Debounce
   let timeout = null
@@ -187,21 +187,24 @@ export function usePriceExplorer() {
 
   // --- Currency ---
 
-  async function fetchExchangeRate() {
-    if (exchangeRate.value) return
+  async function fetchExchangeRates() {
+    if (exchangeRates.value.oficial) return
     try {
       const res = await fetch('https://api.bluelytics.com.ar/v2/latest')
       const data = await res.json()
-      exchangeRate.value = data.oficial.value_sell
+      exchangeRates.value = {
+        oficial: data.oficial.value_sell,
+        blue: data.blue.value_sell,
+      }
     } catch {
-      exchangeRate.value = null
+      exchangeRates.value = { oficial: null, blue: null }
     }
   }
 
   async function setCurrency(c) {
     currency.value = c
-    if (c === 'ARS' && !exchangeRate.value) {
-      await fetchExchangeRate()
+    if (c !== 'USD' && !exchangeRates.value.oficial) {
+      await fetchExchangeRates()
     }
   }
 
@@ -210,8 +213,9 @@ export function usePriceExplorer() {
   }
 
   function formatDisplayPrice(priceUsd) {
-    if (currency.value === 'ARS' && exchangeRate.value) {
-      return formatPrice(Number(priceUsd) * exchangeRate.value)
+    const rate = currency.value === 'ARS_BLUE' ? exchangeRates.value.blue : exchangeRates.value.oficial
+    if (currency.value !== 'USD' && rate) {
+      return formatPrice(Number(priceUsd) * rate)
     }
     return formatPrice(priceUsd)
   }
@@ -229,7 +233,7 @@ export function usePriceExplorer() {
     selectedFuel,
     currentPage,
     currency,
-    exchangeRate,
+    exchangeRates,
 
     // Computeds
     filteredResults,

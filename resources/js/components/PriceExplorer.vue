@@ -163,7 +163,7 @@
     </div>
 
     <!-- Currency toggle -->
-    <div v-if="results.length" class="flex items-center gap-2 mb-5 sm:mb-4">
+    <div v-if="results.length" class="flex items-center gap-2 mb-5 sm:mb-4 flex-wrap">
       <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
       <button
         @click="setCurrency('USD')"
@@ -171,12 +171,20 @@
         :class="currency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
       >USD</button>
       <button
-        @click="setCurrency('ARS')"
+        @click="setCurrency('ARS_OFICIAL')"
         class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-        :class="currency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+        :class="currency === 'ARS_OFICIAL' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
       >ARS</button>
-      <span v-if="currency === 'ARS' && exchangeRate" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
-        Dólar oficial: ${{ formatPrice(exchangeRate) }} ARS/USD
+      <button
+        @click="setCurrency('ARS_BLUE')"
+        class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+        :class="currency === 'ARS_BLUE' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+      >ARS Blue</button>
+      <span v-if="currency === 'ARS_OFICIAL' && exchangeRates.oficial" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
+        Dólar oficial: ${{ formatPrice(exchangeRates.oficial) }} ARS/USD
+      </span>
+      <span v-if="currency === 'ARS_BLUE' && exchangeRates.blue" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
+        Dólar blue: ${{ formatPrice(exchangeRates.blue) }} ARS/USD
       </span>
     </div>
 
@@ -273,7 +281,7 @@ const {
   selectedFuel,
   currentPage,
   currency,
-  exchangeRate,
+  exchangeRates,
   filteredResults,
   paginatedResults,
   totalPages,
