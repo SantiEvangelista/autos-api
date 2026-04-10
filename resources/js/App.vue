@@ -113,7 +113,7 @@
         </div>
 
         <!-- Search currency toggle -->
-        <div v-if="searchResults.length" class="flex items-center gap-2 mt-4 sm:mt-6 mb-2 sm:mb-3">
+        <div v-if="searchResults.length" class="flex items-center gap-2 mt-4 sm:mt-6 mb-2 sm:mb-3 flex-wrap">
           <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
           <button
             @click="setSearchCurrency('USD')"
@@ -121,17 +121,44 @@
             :class="searchCurrency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
           >USD</button>
           <button
-            @click="setSearchCurrency('ARS')"
+            @click="setSearchCurrency('ARS_OFICIAL')"
             class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="searchCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+            :class="searchCurrency === 'ARS_OFICIAL' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
           >ARS</button>
-          <span v-if="searchCurrency === 'ARS' && searchExchangeRate" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
-            Dólar oficial: ${{ formatPrice(searchExchangeRate) }} ARS/USD
+          <button
+            @click="setSearchCurrency('ARS_BLUE')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="searchCurrency === 'ARS_BLUE' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >ARS Blue</button>
+          <span v-if="searchCurrency === 'ARS_OFICIAL' && searchExchangeRates.oficial" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
+            Dólar oficial: ${{ formatPrice(searchExchangeRates.oficial) }} ARS/USD
+          </span>
+          <span v-if="searchCurrency === 'ARS_BLUE' && searchExchangeRates.blue" class="font-mono text-[10px] sm:text-[11px] text-cream/25 ml-2">
+            Dólar blue: ${{ formatPrice(searchExchangeRates.blue) }} ARS/USD
+          </span>
+        </div>
+
+        <!-- Search year filter -->
+        <div v-if="searchResults.length && availableSearchYears.length > 1" class="flex items-center gap-2 mb-3 sm:mb-4">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Año:</span>
+          <select
+            :value="searchYearFilter"
+            @change="searchYearFilter = $event.target.value === '' ? null : Number($event.target.value); currentSearchPage = 1"
+            class="font-mono text-[10px] sm:text-xs bg-cream/[0.04] border border-cream/10 rounded px-2 py-1 text-cream/70 outline-none focus:border-gold/40 transition-colors duration-300 cursor-pointer appearance-none pr-6"
+            style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.3)%22 stroke-width=%222%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 6px center;"
+          >
+            <option value="" class="bg-[#0a1628] text-cream/70">Todos</option>
+            <option v-for="year in availableSearchYears" :key="year" :value="year" class="bg-[#0a1628] text-cream/70">
+              {{ year === 0 ? '0 km' : year }}
+            </option>
+          </select>
+          <span v-if="searchYearFilter !== null" class="font-mono text-[10px] sm:text-[11px] text-cream/25">
+            {{ filteredSearchResults.length }} resultado{{ filteredSearchResults.length !== 1 ? 's' : '' }}
           </span>
         </div>
 
         <!-- Search results (with reference price) -->
-        <div v-if="searchResults.length" class="space-y-2.5 sm:space-y-3">
+        <div v-if="filteredSearchResults.length" class="space-y-2.5 sm:space-y-3">
           <div
             v-for="r in paginatedSearchResults"
             :key="r.version_id"
@@ -155,7 +182,7 @@
         </div>
 
         <!-- Search pagination -->
-        <div v-if="totalSearchPages > 1" class="flex items-center justify-center gap-1.5 mt-6">
+        <div v-if="filteredSearchResults.length && totalSearchPages > 1" class="flex items-center justify-center gap-1.5 mt-6">
           <button
             @click="goToSearchPage(currentSearchPage - 1)"
             :disabled="currentSearchPage === 1"
@@ -180,6 +207,9 @@
         </div>
         <div v-if="searchQuery.length >= 2 && !searching && !searchResults.length" class="mt-4 sm:mt-6">
           <p class="text-cream/30 text-sm sm:text-base">Sin resultados para "{{ searchQuery }}"</p>
+        </div>
+        <div v-if="searchResults.length && !filteredSearchResults.length" class="mt-4 sm:mt-6">
+          <p class="text-cream/30 text-sm sm:text-base">Sin resultados para el año seleccionado</p>
         </div>
       </section>
 
@@ -647,33 +677,55 @@ const searchQuery = ref('')
 const searchResults = ref([])
 const searching = ref(false)
 const searchCurrency = ref('USD')
-const searchExchangeRate = ref(null)
+const searchExchangeRates = ref({ oficial: null, blue: null })
 let searchTimeout = null
 
-async function fetchSearchExchangeRate() {
-  if (searchExchangeRate.value) return
+async function fetchSearchExchangeRates() {
+  if (searchExchangeRates.value.oficial) return
   try {
     const res = await fetch('https://api.bluelytics.com.ar/v2/latest')
     const data = await res.json()
-    searchExchangeRate.value = data.oficial.value_sell
+    searchExchangeRates.value = {
+      oficial: data.oficial.value_sell,
+      blue: data.blue.value_sell,
+    }
   } catch {
-    searchExchangeRate.value = null
+    searchExchangeRates.value = { oficial: null, blue: null }
   }
 }
 
 async function setSearchCurrency(currency) {
   searchCurrency.value = currency
-  if (currency === 'ARS' && !searchExchangeRate.value) {
-    await fetchSearchExchangeRate()
+  if (currency !== 'USD' && !searchExchangeRates.value.oficial) {
+    await fetchSearchExchangeRates()
   }
 }
 
 function formatSearchPrice(priceUsd) {
-  if (searchCurrency.value === 'ARS' && searchExchangeRate.value) {
-    return formatPrice(Number(priceUsd) * searchExchangeRate.value)
+  const rate = searchCurrency.value === 'ARS_BLUE' ? searchExchangeRates.value.blue : searchExchangeRates.value.oficial
+  if (searchCurrency.value !== 'USD' && rate) {
+    return formatPrice(Number(priceUsd) * rate)
   }
   return formatPrice(priceUsd)
 }
+
+// Search year filter
+const searchYearFilter = ref(null)
+
+const availableSearchYears = computed(() => {
+  const years = [...new Set(searchResults.value.map(r => r.price_year).filter(y => y !== null))]
+  years.sort((a, b) => {
+    if (a === 0) return -1
+    if (b === 0) return 1
+    return b - a
+  })
+  return years
+})
+
+const filteredSearchResults = computed(() => {
+  if (searchYearFilter.value === null) return searchResults.value
+  return searchResults.value.filter(r => r.price_year === searchYearFilter.value)
+})
 
 // Search pagination
 const ITEMS_PER_PAGE = 6
@@ -681,11 +733,11 @@ const currentSearchPage = ref(1)
 
 const paginatedSearchResults = computed(() => {
   const start = (currentSearchPage.value - 1) * ITEMS_PER_PAGE
-  return searchResults.value.slice(start, start + ITEMS_PER_PAGE)
+  return filteredSearchResults.value.slice(start, start + ITEMS_PER_PAGE)
 })
 
 const totalSearchPages = computed(() =>
-  Math.ceil(searchResults.value.length / ITEMS_PER_PAGE)
+  Math.ceil(filteredSearchResults.value.length / ITEMS_PER_PAGE)
 )
 
 function goToSearchPage(page) {
@@ -698,10 +750,12 @@ function onSearch() {
   clearTimeout(searchTimeout)
   if (searchQuery.value.length < 2) {
     searchResults.value = []
+    searchYearFilter.value = null
     return
   }
   searching.value = true
   currentSearchPage.value = 1
+  searchYearFilter.value = null
   searchTimeout = setTimeout(async () => {
     try {
       const res = await apiFetch(`/api/v1/search?q=${encodeURIComponent(searchQuery.value)}&per_page=50`)
