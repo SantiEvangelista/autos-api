@@ -16,6 +16,11 @@ class ScrambleServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Scramble::routes(function (\Illuminate\Routing\Route $route) {
+            return str_starts_with($route->uri(), 'api/v1/')
+                && ! str_contains($route->uri(), 'admin/');
+        });
+
         Scramble::afterOpenApiGenerated(function (OpenApi $openApi) {
             $examples = [
                 '/brands' => [
