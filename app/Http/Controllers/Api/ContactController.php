@@ -43,8 +43,10 @@ class ContactController extends Controller
             ."Email: {$validated['email']}\n\n"
             .$validated['message'];
 
-        Mail::raw($body, function ($mail) use ($validated) {
-            $mail->to(config('mail.from.address'))
+        $recipient = config('app.contact_recipient') ?: config('mail.from.address');
+
+        Mail::raw($body, function ($mail) use ($validated, $recipient) {
+            $mail->to($recipient)
                 ->replyTo($validated['email'], $validated['name'])
                 ->subject("Contacto ArgAutos: {$validated['name']}");
         });

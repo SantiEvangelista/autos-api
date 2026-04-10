@@ -3,6 +3,11 @@
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
+beforeEach(function () {
+    config(['app.contact_recipient' => 'test@example.com']);
+    config(['mail.from.address' => 'test@example.com']);
+});
+
 function validContactPayload(array $overrides = []): array
 {
     return array_merge([

@@ -126,5 +126,6 @@ return [
     'admin_api_token' => env('ADMIN_API_TOKEN'),
     'turnstile_site_key' => env('TURNSTILE_SITE_KEY'),
     'turnstile_secret_key' => env('TURNSTILE_SECRET_KEY'),
+    'contact_recipient' => env('CONTACT_RECIPIENT'),
 
 ];
