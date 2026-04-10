@@ -359,7 +359,7 @@ it('returns price evolution when history=true', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 39000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-01',
     ]);
 
@@ -367,7 +367,7 @@ it('returns price evolution when history=true', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 40000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-15',
     ]);
 
@@ -383,7 +383,7 @@ it('filters history by from and to dates', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 38000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-02-01',
     ]);
 
@@ -391,7 +391,7 @@ it('filters history by from and to dates', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 39000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-01',
     ]);
 
@@ -399,7 +399,7 @@ it('filters history by from and to dates', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 40000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-15',
     ]);
 
@@ -416,7 +416,7 @@ it('defaults from to 30 days ago when history=true', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 37000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-02-01', // > 30 days ago
     ]);
 
@@ -424,7 +424,7 @@ it('defaults from to 30 days ago when history=true', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 40000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-15', // within 30 days
     ]);
 
@@ -441,7 +441,7 @@ it('filters history by source parameter', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 40000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-15',
     ]);
 
@@ -471,7 +471,7 @@ it('applies currency conversion to history prices', function () {
         'version_id' => $this->version->id,
         'year' => 2025,
         'price' => 40000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-15',
     ]);
 

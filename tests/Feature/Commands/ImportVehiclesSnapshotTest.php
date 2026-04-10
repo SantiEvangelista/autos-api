@@ -38,7 +38,7 @@ it('creates price snapshots when valuations are upserted', function () {
             'version_id' => $v['version_id'],
             'year' => $v['year'],
             'price' => $v['price'],
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => $now->toDateString(),
             'created_at' => $now,
             'updated_at' => $now,
@@ -48,7 +48,7 @@ it('creates price snapshots when valuations are upserted', function () {
     PriceSnapshot::upsert($snapshotData, ['version_id', 'year', 'source', 'recorded_at'], ['price', 'updated_at']);
 
     expect(PriceSnapshot::count())->toBe(2)
-        ->and(PriceSnapshot::where('source', 'infoauto')->count())->toBe(2)
+        ->and(PriceSnapshot::where('source', 'cca')->count())->toBe(2)
         ->and(PriceSnapshot::where('version_id', $version->id)->where('year', 2025)->first()->price)->toBe('55000.00')
         ->and(PriceSnapshot::where('version_id', $version->id)->where('year', 2024)->first()->price)->toBe('48000.00');
 });
@@ -65,7 +65,7 @@ it('does not duplicate snapshots when upserting on the same day', function () {
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 40000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => $now->toDateString(),
         'created_at' => $now,
         'updated_at' => $now,
@@ -94,7 +94,7 @@ it('creates new snapshots when importing on different days', function () {
             'version_id' => $version->id,
             'year' => 2025,
             'price' => 45000.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => $now->toDateString(),
             'created_at' => $now,
             'updated_at' => $now,
@@ -109,7 +109,7 @@ it('creates new snapshots when importing on different days', function () {
             'version_id' => $version->id,
             'year' => 2025,
             'price' => 46000.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => $now->toDateString(),
             'created_at' => $now,
             'updated_at' => $now,

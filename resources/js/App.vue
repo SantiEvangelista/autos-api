@@ -90,7 +90,7 @@
 
       <!-- Divider -->
 
-      <p class="font-mono text-sm sm:text-base text-gold/80 py-6 sm:py-8 hero-fade" style="animation-delay: 200ms">Precios de referencia con datos de la CCA y Acara</p>
+      <p class="font-mono text-sm sm:text-base text-gold/80 py-6 sm:py-8 hero-fade" style="animation-delay: 200ms">Precios tomados de la Camara de Comercio Automotor (CCA) y Acara</p>
       <div class="border-t border-cream/8"></div>
 
       <!-- Search -->

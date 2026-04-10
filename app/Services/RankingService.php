@@ -51,7 +51,7 @@ class RankingService
 
     private function getLastTwoSnapshotDates(): array
     {
-        $dates = PriceSnapshot::where('source', 'infoauto')
+        $dates = PriceSnapshot::where('source', 'cca')
             ->selectRaw('DISTINCT recorded_at')
             ->orderByDesc('recorded_at')
             ->limit(2)
@@ -147,13 +147,13 @@ class RankingService
             ->join('price_snapshots as prev', function ($join) use ($dates) {
                 $join->on('curr.version_id', '=', 'prev.version_id')
                     ->on('curr.year', '=', 'prev.year')
-                    ->where('prev.source', 'infoauto')
+                    ->where('prev.source', 'cca')
                     ->where('prev.recorded_at', $dates['previous']);
             })
             ->join('versions', 'versions.id', '=', 'curr.version_id')
             ->join('car_models', 'car_models.id', '=', 'versions.car_model_id')
             ->join('brands', 'brands.id', '=', 'car_models.brand_id')
-            ->where('curr.source', 'infoauto')
+            ->where('curr.source', 'cca')
             ->where('curr.recorded_at', $dates['current'])
             ->where('prev.price', '>', 0)
             ->where('curr.price', '>', 0)
@@ -285,12 +285,12 @@ class RankingService
             return null;
         }
 
-        $avgCurrent = PriceSnapshot::where('source', 'infoauto')
+        $avgCurrent = PriceSnapshot::where('source', 'cca')
             ->where('recorded_at', $dates['current'])
             ->where('price', '>', 0)
             ->avg('price');
 
-        $avgPrevious = PriceSnapshot::where('source', 'infoauto')
+        $avgPrevious = PriceSnapshot::where('source', 'cca')
             ->where('recorded_at', $dates['previous'])
             ->where('price', '>', 0)
             ->avg('price');

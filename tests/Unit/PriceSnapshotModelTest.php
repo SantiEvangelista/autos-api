@@ -15,7 +15,7 @@ it('price snapshot belongs to version', function () {
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 35000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-28',
     ]);
 
@@ -31,7 +31,7 @@ it('version has many price snapshots', function () {
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 45000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-01',
     ]);
 
@@ -39,7 +39,7 @@ it('version has many price snapshots', function () {
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 46000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-15',
     ]);
 
@@ -78,7 +78,7 @@ it('enforces unique constraint on version_id year source recorded_at', function 
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 55000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-28',
     ]);
 
@@ -86,7 +86,7 @@ it('enforces unique constraint on version_id year source recorded_at', function 
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 56000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-28',
     ]);
 })->throws(QueryException::class);
@@ -100,7 +100,7 @@ it('allows same version year and date with different source', function () {
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 40000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-28',
     ]);
 
@@ -125,7 +125,7 @@ it('cascades delete when version is deleted', function () {
         'version_id' => $version->id,
         'year' => 2025,
         'price' => 15000.00,
-        'source' => 'infoauto',
+        'source' => 'cca',
         'recorded_at' => '2026-03-28',
     ]);
 

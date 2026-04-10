@@ -37,7 +37,7 @@ beforeEach(function () {
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 10497.57,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-03-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -46,7 +46,7 @@ beforeEach(function () {
             'version_id' => $this->version->id,
             'year' => 2024,
             'price' => 9200.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-03-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -128,7 +128,7 @@ it('preserves march snapshots when importing april data', function () {
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 11200.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-04-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -136,17 +136,17 @@ it('preserves march snapshots when importing april data', function () {
     ], ['version_id', 'year', 'source', 'recorded_at'], ['price', 'updated_at']);
 
     // March snapshots must survive
-    $marchSnapshots = PriceSnapshot::where('source', 'infoauto')
+    $marchSnapshots = PriceSnapshot::where('source', 'cca')
         ->whereDate('recorded_at', '2026-03-07')
         ->get();
 
-    $aprilSnapshots = PriceSnapshot::where('source', 'infoauto')
+    $aprilSnapshots = PriceSnapshot::where('source', 'cca')
         ->whereDate('recorded_at', '2026-04-07')
         ->get();
 
     expect($marchSnapshots)->toHaveCount(2)
         ->and($aprilSnapshots)->toHaveCount(1)
-        ->and(PriceSnapshot::where('source', 'infoauto')->count())->toBe(3);
+        ->and(PriceSnapshot::where('source', 'cca')->count())->toBe(3);
 });
 
 it('creates april snapshots with correct prices separate from march', function () {
@@ -160,7 +160,7 @@ it('creates april snapshots with correct prices separate from march', function (
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => $aprilPrice,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-04-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -169,13 +169,13 @@ it('creates april snapshots with correct prices separate from march', function (
 
     $march = PriceSnapshot::where('version_id', $this->version->id)
         ->where('year', 2025)
-        ->where('source', 'infoauto')
+        ->where('source', 'cca')
         ->where('recorded_at', '2026-03-07')
         ->first();
 
     $april = PriceSnapshot::where('version_id', $this->version->id)
         ->where('year', 2025)
-        ->where('source', 'infoauto')
+        ->where('source', 'cca')
         ->where('recorded_at', '2026-04-07')
         ->first();
 
@@ -191,7 +191,7 @@ it('accumulates three months of snapshots correctly', function () {
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 11200.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-04-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -205,7 +205,7 @@ it('accumulates three months of snapshots correctly', function () {
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 11800.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-05-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -214,7 +214,7 @@ it('accumulates three months of snapshots correctly', function () {
 
     $snapshots = PriceSnapshot::where('version_id', $this->version->id)
         ->where('year', 2025)
-        ->where('source', 'infoauto')
+        ->where('source', 'cca')
         ->orderBy('recorded_at')
         ->get();
 
@@ -228,10 +228,10 @@ it('accumulates three months of snapshots correctly', function () {
 });
 
 // =============================================
-// ACARA snapshots survive infoauto re-import
+// ACARA snapshots survive CCA re-import
 // =============================================
 
-it('preserves acara snapshots when re-importing infoauto data', function () {
+it('preserves acara snapshots when re-importing CCA data', function () {
     // Add ACARA snapshot from March
     PriceSnapshot::create([
         'version_id' => $this->version->id,
@@ -243,13 +243,13 @@ it('preserves acara snapshots when re-importing infoauto data', function () {
 
     Carbon::setTestNow('2026-04-07');
 
-    // April infoauto import
+    // April CCA import
     PriceSnapshot::upsert([
         [
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 11200.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-04-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -257,15 +257,15 @@ it('preserves acara snapshots when re-importing infoauto data', function () {
     ], ['version_id', 'year', 'source', 'recorded_at'], ['price', 'updated_at']);
 
     $acaraMarch = PriceSnapshot::where('source', 'acara')->where('recorded_at', '2026-03-10')->first();
-    $infoautoMarch = PriceSnapshot::where('source', 'infoauto')->where('recorded_at', '2026-03-07')->where('year', 2025)->first();
-    $infoautoApril = PriceSnapshot::where('source', 'infoauto')->where('recorded_at', '2026-04-07')->first();
+    $ccaMarch = PriceSnapshot::where('source', 'cca')->where('recorded_at', '2026-03-07')->where('year', 2025)->first();
+    $ccaApril = PriceSnapshot::where('source', 'cca')->where('recorded_at', '2026-04-07')->first();
 
     expect($acaraMarch)->not->toBeNull()
         ->and($acaraMarch->price)->toBe('10500.00')
-        ->and($infoautoMarch)->not->toBeNull()
-        ->and($infoautoMarch->price)->toBe('10497.57')
-        ->and($infoautoApril)->not->toBeNull()
-        ->and($infoautoApril->price)->toBe('11200.00');
+        ->and($ccaMarch)->not->toBeNull()
+        ->and($ccaMarch->price)->toBe('10497.57')
+        ->and($ccaApril)->not->toBeNull()
+        ->and($ccaApril->price)->toBe('11200.00');
 });
 
 it('accumulates both sources across months', function () {
@@ -280,13 +280,13 @@ it('accumulates both sources across months', function () {
 
     Carbon::setTestNow('2026-04-07');
 
-    // April infoauto
+    // April CCA
     PriceSnapshot::upsert([
         [
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 11200.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-04-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -312,9 +312,9 @@ it('accumulates both sources across months', function () {
         ->orderBy('source')
         ->get();
 
-    // March infoauto + March acara + April infoauto + April acara = 4
+    // March CCA + March acara + April CCA + April acara = 4
     expect($all)->toHaveCount(4)
-        ->and($all->where('source', 'infoauto')->values())->toHaveCount(2)
+        ->and($all->where('source', 'cca')->values())->toHaveCount(2)
         ->and($all->where('source', 'acara')->values())->toHaveCount(2);
 });
 
@@ -331,7 +331,7 @@ it('updates snapshot price on same-day re-import without duplicating', function 
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 11200.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-04-07',
             'created_at' => now(),
             'updated_at' => now(),
@@ -344,14 +344,14 @@ it('updates snapshot price on same-day re-import without duplicating', function 
             'version_id' => $this->version->id,
             'year' => 2025,
             'price' => 11350.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => '2026-04-07',
             'created_at' => now(),
             'updated_at' => now(),
         ],
     ], ['version_id', 'year', 'source', 'recorded_at'], ['price', 'updated_at']);
 
-    $aprilSnapshots = PriceSnapshot::where('source', 'infoauto')
+    $aprilSnapshots = PriceSnapshot::where('source', 'cca')
         ->where('recorded_at', '2026-04-07')
         ->where('version_id', $this->version->id)
         ->where('year', 2025)
@@ -424,7 +424,7 @@ it('simulates full april re-import cycle preserving all march data', function ()
             'version_id' => $version->id,
             'year' => 2025,
             'price' => $aprilPrice2025,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => $now->toDateString(),
             'created_at' => $now,
             'updated_at' => $now,
@@ -433,7 +433,7 @@ it('simulates full april re-import cycle preserving all march data', function ()
             'version_id' => $version->id,
             'year' => 2024,
             'price' => $aprilPrice2024,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => $now->toDateString(),
             'created_at' => $now,
             'updated_at' => $now,
@@ -490,7 +490,7 @@ it('adds new brands and versions in april alongside existing march data', functi
             'version_id' => $sealVersion->id,
             'year' => 0,
             'price' => 45000.00,
-            'source' => 'infoauto',
+            'source' => 'cca',
             'recorded_at' => $now->toDateString(),
             'created_at' => $now,
             'updated_at' => $now,
