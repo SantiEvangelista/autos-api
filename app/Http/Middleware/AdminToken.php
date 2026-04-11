@@ -12,7 +12,7 @@ class AdminToken
     {
         $token = config('app.admin_api_token');
 
-        if (! $token || $request->header('X-Admin-Token') !== $token) {
+        if (! $token || ! hash_equals($token, (string) $request->header('X-Admin-Token'))) {
             return response()->json(['message' => 'Unauthorized.'], 401);
         }
 
