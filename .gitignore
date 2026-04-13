@@ -25,3 +25,4 @@ Homestead.yaml
 Thumbs.db
 /app/Console/Commands/ImportVehicles.php
 .env.testing
+/docs

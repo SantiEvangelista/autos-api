@@ -51,6 +51,28 @@ beforeEach(function () {
     Version::create(['car_model_id' => $bmw320->id, 'name' => '4P 2,0 T 184CV SPORT AT']);
     $bmw118 = CarModel::create(['brand_id' => $bmw->id, 'name' => '118', 'slug' => '118']);
     Version::create(['car_model_id' => $bmw118->id, 'name' => '5P 1,6 136CV SPORT AT']);
+    Version::create(['car_model_id' => $bmw118->id, 'name' => '5P 1,5 T 7AT ADVANTAGE']);
+    Version::create(['car_model_id' => $bmw118->id, 'name' => '5P 1,5 T 7AT ADVANTAGE 2025']);
+
+    // CHEVROLET
+    $chevrolet = Brand::create(['name' => 'CHEVROLET', 'slug' => 'chevrolet']);
+    $tracker = CarModel::create(['brand_id' => $chevrolet->id, 'name' => 'TRACKER', 'slug' => 'tracker']);
+    Version::create(['car_model_id' => $tracker->id, 'name' => '5P 1,2 T MT']);
+    Version::create(['car_model_id' => $tracker->id, 'name' => '5P 1,2 T 6AT']);
+    Version::create(['car_model_id' => $tracker->id, 'name' => '5P 1,2 T 6AT LTZ']);
+
+    // FIAT
+    $fiat = Brand::create(['name' => 'FIAT', 'slug' => 'fiat']);
+    $cronos = CarModel::create(['brand_id' => $fiat->id, 'name' => 'CRONOS', 'slug' => 'cronos']);
+    Version::create(['car_model_id' => $cronos->id, 'name' => '4P 1,3 LIKE GSE 2023']);
+    Version::create(['car_model_id' => $cronos->id, 'name' => '4P 1,3 LIKE GSE 2025']);
+
+    // PORSCHE
+    $porsche = Brand::create(['name' => 'PORSCHE', 'slug' => 'porsche']);
+    $boxster = CarModel::create(['brand_id' => $porsche->id, 'name' => 'BOXSTER', 'slug' => 'boxster']);
+    $macan = CarModel::create(['brand_id' => $porsche->id, 'name' => 'MACAN', 'slug' => 'macan']);
+    Version::create(['car_model_id' => $boxster->id, 'name' => '2P 2,0 BOXSTER']);
+    Version::create(['car_model_id' => $macan->id, 'name' => '5P 2,0 T 252CV']);
 });
 
 // === Fix 2: Brand aliases ===
@@ -160,4 +182,33 @@ it('falls back to brand-wide search when model does not match', function () {
     $result = $this->matcher->findVersion('BMW', 'Serie 3', '2.0T Sport AT (184cv)');
     expect($result)->not->toBeNull()
         ->and($result->name)->toBe('4P 2,0 T 184CV SPORT AT');
+});
+
+it('prefers automatic transmission variants over manual ones for InfoAuto 0km names', function () {
+    $result = $this->matcher->findVersion('CHEVROLET', 'TRACKER', 'TRACKER 1.2 TURBO LT AT6 L/25');
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 1,2 T 6AT');
+});
+
+it('prefers matching candidate year when source contains L slash year', function () {
+    $result = $this->matcher->findVersion('FIAT', 'CRONOS', 'CRONOS 1.3 LIKE L/25');
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('4P 1,3 LIKE GSE 2025');
+});
+
+it('prefers matching candidate year for BMW 0km names', function () {
+    $result = $this->matcher->findVersion('BMW', '118', '118 ADVANTAGE 5 P. AUT L/25');
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 1,5 T 7AT ADVANTAGE 2025');
+});
+
+it('infers the correct Porsche model from the version name context', function () {
+    $result = $this->matcher->findVersion('PORSCHE', '718', '718 2.0 BOXSTER');
+
+    expect($result)->not->toBeNull()
+        ->and($result->carModel->name)->toBe('BOXSTER')
+        ->and($result->name)->toBe('2P 2,0 BOXSTER');
 });
