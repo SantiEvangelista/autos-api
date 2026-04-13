@@ -106,3 +106,57 @@ describe('normalizePrice', function () {
         expect($price)->toBe(20508.0);
     });
 });
+
+describe('isModelUsd — mixed brand currency detection', function () {
+    // Toyota YARIS CROSS is ARS-priced (locally available), NOT USD
+    // Bug: str_contains("YARIS CROSS", "YARIS") was returning true
+    it('treats Toyota YARIS CROSS as ARS, not USD', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', 'YARIS CROSS'))->toBeFalse();
+    });
+
+    // Toyota YARIS (non-GR) versions have ARS 0km prices
+    it('treats Toyota YARIS as ARS', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', 'YARIS'))->toBeFalse();
+    });
+
+    // Toyota 86 and other actual USD models remain USD
+    it('treats Toyota 86 as USD', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', '86'))->toBeTrue();
+    });
+
+    it('treats Toyota LAND CRUISER as USD', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', 'LAND CRUISER'))->toBeTrue();
+    });
+
+    it('treats Toyota RAV - 4 as USD', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', 'RAV - 4'))->toBeTrue();
+    });
+
+    it('treats Toyota HIACE as USD', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', 'HIACE'))->toBeTrue();
+    });
+
+    it('treats Toyota CROWN as USD', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', 'CROWN'))->toBeTrue();
+    });
+
+    // Fiat 600 is ARS-priced (0km = 49340 ARS thousands, confirmed by InfoAuto)
+    it('treats Fiat 600 - 800 as ARS, not USD', function () {
+        expect(ImportVehicles::isModelUsd('FIAT', '600 - 800'))->toBeFalse();
+    });
+
+    // Toyota COROLLA should remain ARS (not in USD list)
+    it('treats Toyota COROLLA as ARS', function () {
+        expect(ImportVehicles::isModelUsd('TOYOTA', 'COROLLA'))->toBeFalse();
+    });
+
+    // Peugeot 3008 and 5008 should remain USD
+    it('treats Peugeot 3008 as USD', function () {
+        expect(ImportVehicles::isModelUsd('PEUGEOT', '3008'))->toBeTrue();
+    });
+
+    // Honda ACCORD should remain USD
+    it('treats Honda ACCORD as USD', function () {
+        expect(ImportVehicles::isModelUsd('HONDA', 'ACCORD'))->toBeTrue();
+    });
+});
