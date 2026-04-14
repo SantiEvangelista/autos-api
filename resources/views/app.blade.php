@@ -190,6 +190,62 @@
                     "@@type": "Answer",
                     "text": "Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y autos usados de distintos años."
                 }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿De dónde salen los datos de marcas, modelos y versiones?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Los datos provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA (Asociación de Concesionarios de Automotores de la República Argentina). Estas son las fuentes oficiales del mercado automotor argentino que recopilan información de precios de referencia de vehículos 0km y usados."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Qué significa el precio que se muestra en Arg Autos?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Es el precio de referencia del mercado automotor argentino. No es un precio de venta ni una oferta comercial, sino una valuación de referencia utilizada por concesionarias, aseguradoras y registros automotores para estimar el valor de un vehículo según su marca, modelo, versión y año-modelo."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Qué cotización de dólar usa Arg Autos y cada cuánto se actualiza?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Las cotizaciones se obtienen en tiempo real a través de Bluelytics. Están disponibles tanto el dólar oficial (venta) como el dólar blue. Cada vez que se consulta un precio en pesos argentinos (ARS), se puede elegir con cuál cotización convertir. La cotización se actualiza automáticamente con cada consulta."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Cada cuánto se actualizan los precios de los autos?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Los precios de referencia de la CCA y ACARA se actualizan mensualmente. Cada mes se procesan las nuevas valuaciones publicadas por estas entidades para reflejar los cambios del mercado automotor."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Qué diferencia hay entre el precio CCA y ACARA?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA (Asociación de Concesionarios) son dos entidades distintas que publican sus propias valuaciones. Los precios pueden diferir porque cada una usa metodologías y fuentes de mercado diferentes. En Arg Autos se pueden comparar ambas fuentes."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Puedo usar la API de Arg Autos en mi aplicación o proyecto?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Sí, la API REST es pública y gratuita. Se puede integrar en cualquier aplicación, sitio web o proyecto sin necesidad de registro ni API key."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "¿Qué significa 0 km en la valuación?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "La categoría 0 km se refiere al año-modelo más reciente disponible para esa versión. Es el precio de referencia para un vehículo nuevo sin uso. Los demás años representan valuaciones de vehículos usados según su antigüedad."
+                }
             }
         ]
     }
@@ -250,6 +306,25 @@
             <h3>¿Cómo se calculan los precios de los autos usados?</h3>
             <p>Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y usados.</p>
         </section>
+        <section>
+            <h2>Sobre los datos y precios</h2>
+            <h3>¿De dónde salen los datos de marcas, modelos y versiones?</h3>
+            <p>Los datos provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Son las fuentes oficiales del mercado automotor argentino.</p>
+            <h3>¿Qué significa el precio que se muestra?</h3>
+            <p>Es el precio de referencia del mercado automotor argentino utilizado por concesionarias, aseguradoras y registros automotores.</p>
+            <h3>¿Qué cotización de dólar se usa?</h3>
+            <p>Las cotizaciones se obtienen en tiempo real a través de Bluelytics. Están disponibles tanto el dólar oficial (venta) como el dólar blue para convertir precios a pesos argentinos.</p>
+            <h3>¿Cada cuánto se actualizan los precios?</h3>
+            <p>Los precios de referencia se actualizan mensualmente con datos de la CCA y ACARA.</p>
+            <h3>¿Es gratis consultar los precios?</h3>
+            <p>Sí, Arg Autos es 100% gratuito para consultar precios de más de 60 marcas, 600 modelos y 5.800 versiones.</p>
+            <h3>¿Qué diferencia hay entre el precio CCA y ACARA?</h3>
+            <p>Son dos entidades distintas con metodologías diferentes. En Arg Autos podés comparar ambas fuentes.</p>
+            <h3>¿Puedo usar la API en mi aplicación o proyecto?</h3>
+            <p>Sí, la API REST es pública y gratuita. Se puede integrar sin registro ni API key.</p>
+            <h3>¿Qué significa "0 km" en la valuación?</h3>
+            <p>Se refiere al año-modelo más reciente disponible, el precio de referencia para un vehículo nuevo sin uso.</p>
+        </section>
         <footer>
             <p>Desarrollado por <a href="https://github.com/SantiEvangelista">Santiago Evangelista</a></p>
             <p><a href="{{ config('app.url') }}/docs/api">Documentación de la API</a></p>
@@ -259,6 +334,7 @@
     <script>
         window.__RANKINGS__ = @json($rankings);
         window.__BODY_TYPES__ = @json($bodyTypes);
+        window.__STATS__ = @json($stats);
         window.__TURNSTILE_SITE_KEY__ = @json(config('app.turnstile_site_key'));
     </script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>

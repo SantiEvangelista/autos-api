@@ -393,6 +393,12 @@
         </div>
       </section>
 
+      <!-- Divider -->
+      <div class="border-t border-cream/8"></div>
+
+      <!-- FAQ -->
+      <FaqSection />
+
       <!-- Footer -->
       <footer class="py-8 sm:py-10 border-t border-cream/6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
@@ -555,6 +561,7 @@
 import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import RankingTable from './components/RankingTable.vue'
 import PriceExplorer from './components/PriceExplorer.vue'
+import FaqSection from './components/FaqSection.vue'
 
 const baseUrl = window.location.origin
 
@@ -565,8 +572,13 @@ fetch('https://api.github.com/repos/SantiEvangelista/autos-api')
   .then(data => { if (data) githubStars.value = data.stargazers_count })
   .catch(() => {})
 
-// Stats
-const stats = reactive({ brands: '...', models: '...', versions: '...' })
+// Stats (server-side injected to avoid NaN on SSR/crawl)
+const serverStats = window.__STATS__
+const stats = reactive({
+  brands: serverStats ? Number(serverStats.brands).toLocaleString('es-AR') : '...',
+  models: serverStats ? Number(serverStats.models).toLocaleString('es-AR') : '...',
+  versions: serverStats ? Number(serverStats.versions).toLocaleString('es-AR') : '...',
+})
 
 // Explorer state
 const loading = ref(false)
@@ -606,9 +618,15 @@ async function apiFetch(path) {
 // Load initial data on mount
 apiFetch('/api/v1/brands').then(res => { explorer.brands = res.data })
 apiFetch('/api/v1/stats').then(res => {
-  stats.brands = Number(res.brands).toLocaleString('es-AR')
-  stats.models = Number(res.models).toLocaleString('es-AR')
-  stats.versions = Number(res.versions).toLocaleString('es-AR')
+  if (res.brands != null && !isNaN(Number(res.brands))) {
+    stats.brands = Number(res.brands).toLocaleString('es-AR')
+  }
+  if (res.models != null && !isNaN(Number(res.models))) {
+    stats.models = Number(res.models).toLocaleString('es-AR')
+  }
+  if (res.versions != null && !isNaN(Number(res.versions))) {
+    stats.versions = Number(res.versions).toLocaleString('es-AR')
+  }
 })
 
 async function selectBrand(brand) {
