@@ -701,11 +701,11 @@ let searchTimeout = null
 async function fetchSearchExchangeRates() {
   if (searchExchangeRates.value.oficial) return
   try {
-    const res = await fetch('https://api.bluelytics.com.ar/v2/latest')
+    const res = await fetch('/api/v1/exchange-rates')
     const data = await res.json()
     searchExchangeRates.value = {
-      oficial: data.oficial.value_sell,
-      blue: data.blue.value_sell,
+      oficial: data.oficial,
+      blue: data.blue,
     }
   } catch {
     searchExchangeRates.value = { oficial: null, blue: null }

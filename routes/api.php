@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CarModelController;
+use App\Http\Controllers\Api\ExchangeRateController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\MetricsController;
 use App\Http\Controllers\Api\PriceExplorerController;
@@ -19,6 +20,7 @@ Route::prefix('v1')->group(function () {
     Route::get('search', SearchController::class)->name('search');
     Route::get('price-explorer', PriceExplorerController::class)->name('price-explorer');
     Route::get('stats', StatsController::class)->name('stats');
+    Route::get('exchange-rates', ExchangeRateController::class)->name('exchange-rates');
     Route::get('health', HealthController::class)->name('health');
 
     Route::get('admin/metrics', MetricsController::class)
