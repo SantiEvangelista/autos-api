@@ -37,7 +37,7 @@ class RankingService
             'biggest_price_decrease' => $this->biggestPriceChange($snapshotDates, 'decrease'),
             'most_aggressive_depreciation' => $this->depreciationExtreme($latestUsedYear, 'asc'),
             'least_depreciation' => $this->depreciationExtreme($latestUsedYear, 'desc'),
-            'average_0km_price' => $this->average0kmPrice(),
+            'average_0km_price' => $this->median0kmPrice(),
             'most_expensive_brand_avg' => $this->brandByAvgPrice('desc'),
             'most_affordable_brand_avg' => $this->brandByAvgPrice('asc'),
             'biggest_mom_drop' => $this->biggestPriceChange($snapshotDates, 'decrease'),
@@ -235,21 +235,29 @@ class RankingService
         ];
     }
 
-    private function average0kmPrice(): ?array
+    private function median0kmPrice(): ?array
     {
-        $avgUsd = Valuation::where('year', 0)
+        $prices = Valuation::where('year', 0)
             ->where('price', '>', 0)
-            ->avg('price');
+            ->orderBy('price')
+            ->pluck('price');
 
-        if (! $avgUsd) {
+        $count = $prices->count();
+
+        if ($count === 0) {
             return null;
         }
+
+        $middle = intdiv($count, 2);
+        $medianUsd = $count % 2 === 0
+            ? round(((float) $prices[$middle - 1] + (float) $prices[$middle]) / 2, 2)
+            : round((float) $prices[$middle], 2);
 
         $rate = $this->exchangeRateService->getOfficialSellRate();
 
         return [
-            'usd' => round((float) $avgUsd, 2),
-            'ars' => $rate ? round((float) $avgUsd * $rate, 2) : null,
+            'usd' => $medianUsd,
+            'ars' => $rate ? round($medianUsd * $rate, 2) : null,
             'exchange_rate' => $rate,
         ];
     }

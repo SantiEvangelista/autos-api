@@ -158,7 +158,7 @@ const items = computed(() => {
     },
     {
       key: 'average_0km_price',
-      label: 'Precio promedio 0km',
+      label: '¿Cuánto sale un 0km?',
       value: r.average_0km_price
         ? `US$${fmt(r.average_0km_price.usd)}${r.average_0km_price.ars ? `  |  ARS $${fmt(r.average_0km_price.ars)}` : ''}`
         : 'Sin datos',
