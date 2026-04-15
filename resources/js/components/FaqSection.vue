@@ -51,7 +51,7 @@ function toggle(index) {
 const items = [
   {
     question: '¿De dónde salen los datos de marcas, modelos y versiones?',
-    answer: 'Los datos provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA (Asociación de Concesionarios de Automotores de la República Argentina). Estas son las fuentes oficiales del mercado automotor argentino que recopilan información de precios de referencia de vehículos 0km y usados.'
+    answer: 'Los datos provienen de la CCA (Cámara del Comercio Automotor) y ACARA (Asociación de Concesionarios de Automotores de la República Argentina). Estas son las fuentes oficiales del mercado automotor argentino que recopilan información de precios de referencia de vehículos 0km y usados.'
   },
   {
     question: '¿Qué significa el precio que se muestra?',
@@ -71,7 +71,7 @@ const items = [
   },
   {
     question: '¿Qué diferencia hay entre el precio CCA y ACARA?',
-    answer: 'CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA (Asociación de Concesionarios) son dos entidades distintas que publican sus propias valuaciones. Los precios pueden diferir porque cada una usa metodologías y fuentes de mercado diferentes. En Arg Autos podés comparar ambas fuentes usando el selector de fuente de precio al consultar una versión.'
+    answer: 'CCA (Cámara del Comercio Automotor) y ACARA (Asociación de Concesionarios) son dos entidades distintas que publican sus propias valuaciones. Los precios pueden diferir porque cada una usa metodologías y fuentes de mercado diferentes. En Arg Autos podés comparar ambas fuentes usando el selector de fuente de precio al consultar una versión.'
   },
   {
     question: '¿Puedo usar la API en mi aplicación o proyecto?',

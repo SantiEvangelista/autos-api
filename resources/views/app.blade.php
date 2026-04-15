@@ -172,7 +172,7 @@
                 "name": "¿Cuánto vale mi auto en Argentina hoy?",
                 "acceptedAnswer": {
                     "@@type": "Answer",
-                    "text": "Podés consultar el valor de tu auto en Argentina buscando por marca, modelo y versión en Arg Autos. Los precios se actualizan mensualmente con datos de la CCA (ex InfoAuto) y ACARA, con conversión a pesos argentinos en tiempo real usando la cotización del dólar oficial."
+                    "text": "Podés consultar el valor de tu auto en Argentina buscando por marca, modelo y versión en Arg Autos. Los precios se actualizan mensualmente con datos de la CCA y ACARA, con conversión a pesos argentinos en tiempo real usando la cotización del dólar oficial."
                 }
             },
             {
@@ -188,7 +188,7 @@
                 "name": "¿Cómo se calculan los precios de los autos usados?",
                 "acceptedAnswer": {
                     "@@type": "Answer",
-                    "text": "Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y autos usados de distintos años."
+                    "text": "Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y autos usados de distintos años."
                 }
             },
             {
@@ -196,7 +196,7 @@
                 "name": "¿De dónde salen los datos de marcas, modelos y versiones?",
                 "acceptedAnswer": {
                     "@@type": "Answer",
-                    "text": "Los datos provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA (Asociación de Concesionarios de Automotores de la República Argentina). Estas son las fuentes oficiales del mercado automotor argentino que recopilan información de precios de referencia de vehículos 0km y usados."
+                    "text": "Los datos provienen de la CCA (Cámara del Comercio Automotor) y ACARA (Asociación de Concesionarios de Automotores de la República Argentina). Estas son las fuentes oficiales del mercado automotor argentino que recopilan información de precios de referencia de vehículos 0km y usados."
                 }
             },
             {
@@ -228,7 +228,7 @@
                 "name": "¿Qué diferencia hay entre el precio CCA y ACARA?",
                 "acceptedAnswer": {
                     "@@type": "Answer",
-                    "text": "CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA (Asociación de Concesionarios) son dos entidades distintas que publican sus propias valuaciones. Los precios pueden diferir porque cada una usa metodologías y fuentes de mercado diferentes. En Arg Autos se pueden comparar ambas fuentes."
+                    "text": "CCA (Cámara del Comercio Automotor) y ACARA (Asociación de Concesionarios) son dos entidades distintas que publican sus propias valuaciones. Los precios pueden diferir porque cada una usa metodologías y fuentes de mercado diferentes. En Arg Autos se pueden comparar ambas fuentes."
                 }
             },
             {
@@ -276,7 +276,7 @@
         </header>
         <section>
             <h2>¿Cuánto vale mi auto en Argentina?</h2>
-            <p>Podés conocer el valor de tu auto buscando por marca, modelo y versión. Los precios se actualizan mensualmente con datos de la CCA (ex InfoAuto) y ACARA. Los valores están en dólares con conversión automática a pesos argentinos usando la cotización del dólar oficial.</p>
+            <p>Podés conocer el valor de tu auto buscando por marca, modelo y versión. Los precios se actualizan mensualmente con datos de la CCA y ACARA. Los valores están en dólares con conversión automática a pesos argentinos usando la cotización del dólar oficial.</p>
         </section>
         <section>
             <h2>Endpoints de la API</h2>
@@ -300,16 +300,16 @@
             <h3>¿Qué datos ofrece la API de autos?</h3>
             <p>La API provee marcas, modelos, versiones y valuaciones por año-modelo del mercado automotor argentino. Los precios están en USD con conversión a ARS usando cotización dólar oficial en tiempo real vía Bluelytics.</p>
             <h3>¿Cuánto vale mi auto en Argentina hoy?</h3>
-            <p>Podés consultar el valor de tu auto buscando por marca, modelo y versión en Arg Autos. Los precios se actualizan mensualmente con datos de la CCA (ex InfoAuto) y ACARA, con conversión a pesos argentinos en tiempo real.</p>
+            <p>Podés consultar el valor de tu auto buscando por marca, modelo y versión en Arg Autos. Los precios se actualizan mensualmente con datos de la CCA y ACARA, con conversión a pesos argentinos en tiempo real.</p>
             <h3>¿Dónde puedo ver los precios de autos 0km en Argentina?</h3>
             <p>En Arg Autos podés ver los precios de más de 5.800 versiones de autos 0km en Argentina. Los precios están en dólares con conversión a pesos usando la cotización del dólar oficial.</p>
             <h3>¿Cómo se calculan los precios de los autos usados?</h3>
-            <p>Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y usados.</p>
+            <p>Los precios de referencia provienen de la CCA (Cámara del Comercio Automotor) y ACARA. Cada versión tiene valuaciones por año-modelo, permitiendo comparar la depreciación entre 0km y usados.</p>
         </section>
         <section>
             <h2>Sobre los datos y precios</h2>
             <h3>¿De dónde salen los datos de marcas, modelos y versiones?</h3>
-            <p>Los datos provienen de la CCA (Cámara del Comercio Automotor, ex InfoAuto) y ACARA. Son las fuentes oficiales del mercado automotor argentino.</p>
+            <p>Los datos provienen de la CCA (Cámara del Comercio Automotor) y ACARA. Son las fuentes oficiales del mercado automotor argentino.</p>
             <h3>¿Qué significa el precio que se muestra?</h3>
             <p>Es el precio de referencia del mercado automotor argentino utilizado por concesionarias, aseguradoras y registros automotores.</p>
             <h3>¿Qué cotización de dólar se usa?</h3>
