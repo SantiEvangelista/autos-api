@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -21,7 +22,7 @@ class ContactController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|max:255|indisposable',
+            'email' => 'required|email:dns|max:255|indisposable',
             'message' => 'required|string|max:2000',
             'cf_turnstile_response' => 'required|string',
         ], [
@@ -29,11 +30,19 @@ class ContactController extends Controller
         ]);
 
         // Verify Turnstile token
-        $turnstileResponse = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-            'secret' => config('app.turnstile_secret_key'),
-            'response' => $validated['cf_turnstile_response'],
-            'remoteip' => $request->ip(),
-        ]);
+        try {
+            $turnstileResponse = Http::asForm()
+                ->timeout(5)
+                ->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret' => config('app.turnstile_secret_key'),
+                    'response' => $validated['cf_turnstile_response'],
+                    'remoteip' => $request->ip(),
+                ]);
+        } catch (ConnectionException) {
+            Log::warning('Turnstile verification unavailable');
+
+            return response()->json(['message' => 'Servicio de verificación no disponible. Intentá más tarde.'], 503);
+        }
 
         if (! $turnstileResponse->json('success')) {
             return response()->json(['message' => 'Verificación de seguridad fallida. Intentá de nuevo.'], 422);
@@ -50,8 +59,6 @@ class ContactController extends Controller
                 ->replyTo($validated['email'], $validated['name'])
                 ->subject("Contacto ArgAutos: {$validated['name']}");
         });
-
-        Log::info('Contact form submitted', ['name' => $validated['name'], 'email' => $validated['email']]);
 
         return response()->json(['message' => 'Mensaje enviado correctamente.']);
     }
