@@ -110,8 +110,8 @@ it('finds the best partial cluster for intra family fallback', function () {
         ],
         'medio_drive' => [
             'match' => ['all' => ['DRIVE'], 'any' => [], 'none' => ['LIKE', 'PRECISION']],
-            'factor' => 0.792,
-            'drops' => [1800],
+            'factor' => 0.721,
+            'drops' => [1200],
             'segment' => 'sedan_chico',
         ],
         'full_precision' => [
@@ -178,8 +178,78 @@ it('predicts metadata and prices for a calibrated version with line year awarene
 
     expect($prediction)->not->toBeNull()
         ->and($prediction['confidence'])->toBe('high')
-        ->and($prediction['cluster_key'])->toBe('calibrated:fiat:pulse:alto_impetus')
+        ->and($prediction['cluster_key'])->toBe('calibrated:fiat:pulse:alto_impetus_l25')
         ->and($prediction['predictions'])->toBe([
             2025 => 34500.0,
+        ]);
+});
+
+it('predicts the legacy pulse impetus curve from the latest magazine sample', function () {
+    $version = makeVersion('fiat', 'FIAT', 'pulse', 'PULSE', '5P 1,0 T IMPETUS CVT');
+
+    $prediction = $this->service->predict($version, 42670.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['cluster_key'])->toBe('calibrated:fiat:pulse:alto_impetus')
+        ->and($prediction['predictions'])->toBe([
+            2025 => 32500.0,
+            2024 => 31000.0,
+            2023 => 29600.0,
+            2022 => 28300.0,
+            2021 => 27000.0,
+            2020 => 25700.0,
+            2019 => 24400.0,
+        ]);
+});
+
+it('predicts cronos drive pack plus cvt close to the revista values', function () {
+    $version = makeVersion('fiat', 'FIAT', 'cronos', 'CRONOS', '4P 1,3 DRIVE GSE PACK PLUS CVT 2025');
+
+    $prediction = $this->service->predict($version, 37430.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 27000.0,
+        ]);
+});
+
+it('predicts frontier x-gear closer to the calibrated revista sample', function () {
+    $version = makeVersion('nissan', 'NISSAN', 'frontier-pick-up', 'FRONTIER PICK - UP', 'D/C 2,3 TD 4X4 X-GEAR AT 190CV 2024');
+
+    $prediction = $this->service->predict($version, 60421.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 42000.0,
+            2024 => 39000.0,
+        ]);
+});
+
+it('predicts hilux srv without applying the global line premium heuristic', function () {
+    $version = makeVersion('toyota', 'TOYOTA', 'hilux-pick-up', 'HILUX PICK - UP', 'D/C 2,8 TDi 4X4 SRV 6AT 2024');
+
+    $prediction = $this->service->predict($version, 76381.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 56500.0,
+            2024 => 54500.0,
+        ]);
+});
+
+it('predicts kicks exclusive 1.6 with the new exclusive curve', function () {
+    $version = makeVersion('nissan', 'NISSAN', 'kicks', 'KICKS', '5P 1,6 EXCLUSIVE CVT');
+
+    $prediction = $this->service->predict($version, 46300.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 38200.0,
+            2024 => 36900.0,
+            2023 => 36100.0,
+            2022 => 34500.0,
+            2021 => 33300.0,
+            2020 => 32600.0,
+            2019 => 31900.0,
         ]);
 });
