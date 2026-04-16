@@ -147,6 +147,144 @@ it('includes popular brands and models in daily breakdown', function () {
         ->and($daily['popular_models'])->toHaveKey('FORD RANGER');
 });
 
+// --- IP Exclusion ---
+
+it('does not track requests from excluded IPs', function () {
+    config(['app.metrics_excluded_ips' => ['9.9.9.9']]);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '9.9.9.9'])->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.api_requests'))->toBe(0)
+        ->and($response->json('totals.unique_visitors'))->toBe(0);
+});
+
+it('tracks requests from non-excluded IPs normally', function () {
+    config(['app.metrics_excluded_ips' => ['9.9.9.9']]);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '1.2.3.4'])->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.api_requests'))->toBeGreaterThan(0);
+});
+
+// --- Traffic Breakdown ---
+
+it('classifies browser requests by Mozilla User-Agent', function () {
+    $this->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.traffic_breakdown.browser'))->toBe(1);
+});
+
+it('classifies known crawler User-Agents as bot', function () {
+    $this->withHeaders(['User-Agent' => 'Googlebot/2.1 (+http://www.google.com/bot.html)'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.traffic_breakdown.bot'))->toBe(1);
+});
+
+it('classifies empty User-Agent as bot', function () {
+    $this->withHeaders(['User-Agent' => ''])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.traffic_breakdown.bot'))->toBe(1);
+});
+
+it('classifies non-Mozilla API requests as api_client', function () {
+    $this->withHeaders(['User-Agent' => 'PostmanRuntime/7.36.0'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.traffic_breakdown.api_client'))->toBe(1);
+});
+
+it('classifies reconnaissance paths as bot regardless of User-Agent', function () {
+    $this->withHeaders(['User-Agent' => 'Mozilla/5.0 Chrome/120.0.0.0'])
+        ->get('/api/.env');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.traffic_breakdown.bot'))->toBe(1);
+});
+
+it('records bot paths for reconnaissance requests', function () {
+    $this->withHeaders(['User-Agent' => 'curl/7.88.0'])
+        ->get('/api/.git/config');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.top_bot_paths'))->toHaveKey('api/.git/config');
+});
+
+it('includes traffic breakdown in daily metrics', function () {
+    $this->withHeaders(['User-Agent' => 'Mozilla/5.0 Chrome/120.0.0.0'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics?days=1', ['X-Admin-Token' => 'test-secret-token']);
+
+    $today = now()->toDateString();
+    expect($response->json("daily.{$today}.traffic_breakdown.browser"))->toBe(1);
+});
+
+// --- Referrer Tracking ---
+
+it('tracks referrer domain from Referer header', function () {
+    $this->withHeaders(['Referer' => 'https://google.com/search?q=autos'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.referrers'))->toHaveKey('google.com');
+});
+
+it('tracks direct when no Referer header is present', function () {
+    $this->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.referrers'))->toHaveKey('direct');
+});
+
+it('tracks same-site referrer as direct', function () {
+    config(['app.url' => 'https://argautos.com']);
+
+    $this->withHeaders(['Referer' => 'https://argautos.com/some-page'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.referrers.direct'))->toBeGreaterThanOrEqual(1);
+});
+
+it('falls back to Origin header when Referer is absent', function () {
+    $this->withHeaders(['Origin' => 'https://external-app.com'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics', ['X-Admin-Token' => 'test-secret-token']);
+
+    expect($response->json('totals.referrers'))->toHaveKey('external-app.com');
+});
+
+it('includes referrers in daily metrics', function () {
+    $this->withHeaders(['Referer' => 'https://reddit.com/r/argentina'])
+        ->getJson('/api/v1/brands');
+
+    $response = $this->getJson('/api/v1/admin/metrics?days=1', ['X-Admin-Token' => 'test-secret-token']);
+
+    $today = now()->toDateString();
+    expect($response->json("daily.{$today}.referrers"))->toHaveKey('reddit.com');
+});
+
 // --- Response structure ---
 
 it('returns complete metrics structure with daily default 1 day', function () {
@@ -160,6 +298,9 @@ it('returns complete metrics structure with daily default 1 day', function () {
                 'endpoints',
                 'popular_brands',
                 'popular_models',
+                'traffic_breakdown',
+                'top_bot_paths',
+                'referrers',
             ],
             'daily',
         ]);
