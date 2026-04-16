@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PriceSnapshot extends Model
 {
-    protected $fillable = ['version_id', 'year', 'price', 'source', 'recorded_at'];
+    protected $fillable = ['version_id', 'year', 'price', 'source', 'confidence', 'prediction_rule', 'recorded_at'];
 
     protected function casts(): array
     {

@@ -22,11 +22,11 @@ class VersionValuationsRequest extends FormRequest
             'relations' => ['sometimes', 'array'],
             'relations.*' => ['string', 'in:version,model,brand'],
             'sources' => ['sometimes', 'array'],
-            'sources.*' => ['string', 'in:infoauto,acara,cca'],
+            'sources.*' => ['string', 'in:infoauto,acara,cca,infoauto_predicted'],
             'history' => ['sometimes', 'in:true,false,1,0'],
             'from' => ['sometimes', 'date_format:Y-m-d'],
             'to' => ['sometimes', 'date_format:Y-m-d', 'after_or_equal:from'],
-            'source' => ['sometimes', 'string', 'in:infoauto,acara,cca'],
+            'source' => ['sometimes', 'string', 'in:infoauto,acara,cca,infoauto_predicted'],
         ];
     }
 

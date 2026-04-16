@@ -124,6 +124,7 @@ return [
     ],
 
     'admin_api_token' => env('ADMIN_API_TOKEN'),
+    'metrics_excluded_ips' => array_filter(array_map('trim', explode(',', env('METRICS_EXCLUDED_IPS', '')))),
     'turnstile_site_key' => env('TURNSTILE_SITE_KEY'),
     'turnstile_secret_key' => env('TURNSTILE_SECRET_KEY'),
     'contact_recipient' => env('CONTACT_RECIPIENT'),
