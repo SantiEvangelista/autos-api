@@ -9,6 +9,7 @@ use App\Http\Resources\ValuationResource;
 use App\Models\PriceSnapshot;
 use App\Models\Version;
 use App\Services\ExchangeRateService;
+use App\Services\PriceResolverService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -40,7 +41,7 @@ class VersionController extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection<\App\Http\Resources\ValuationResource>
      */
-    public function valuations(VersionValuationsRequest $request, Version $version, ExchangeRateService $exchangeRate): JsonResponse|AnonymousResourceCollection
+    public function valuations(VersionValuationsRequest $request, Version $version, ExchangeRateService $exchangeRate, PriceResolverService $priceResolver): JsonResponse|AnonymousResourceCollection
     {
         $currency = $request->validated('currency', 'USD');
 
@@ -66,9 +67,14 @@ class VersionController extends Controller
         // Attach ACARA prices if sources includes 'acara'
         $sources = $request->validated('sources', []);
         $includeAcara = in_array('acara', $sources);
+        $includeInfoauto = in_array('infoauto', $sources);
 
         if ($includeAcara) {
             $this->attachAcaraPrices($valuations, $version->id);
+        }
+
+        if ($includeInfoauto) {
+            $this->attachInfoautoPrices($valuations, $version->id, $priceResolver);
         }
 
         if ($rate) {
@@ -76,6 +82,9 @@ class VersionController extends Controller
                 $val->price = round($val->price * $rate, 2);
                 if (isset($val->acara_price) && $val->acara_price !== null) {
                     $val->acara_price = number_format(round((float) $val->acara_price * $rate, 2), 2, '.', '');
+                }
+                if (isset($val->infoauto_price) && $val->infoauto_price !== null) {
+                    $val->infoauto_price = number_format(round((float) $val->infoauto_price * $rate, 2), 2, '.', '');
                 }
                 return $val;
             });
@@ -90,6 +99,9 @@ class VersionController extends Controller
                 $val->price_formatted = $symbol . number_format($val->price, 2, ',', '.');
                 if (isset($val->acara_price) && $val->acara_price !== null) {
                     $val->acara_price_formatted = $symbol . number_format((float) $val->acara_price, 2, ',', '.');
+                }
+                if (isset($val->infoauto_price) && $val->infoauto_price !== null) {
+                    $val->infoauto_price_formatted = $symbol . number_format((float) $val->infoauto_price, 2, ',', '.');
                 }
                 return $val;
             });
@@ -141,6 +153,23 @@ class VersionController extends Controller
         $valuations->transform(function ($val) use ($acaraPrices) {
             $acara = $acaraPrices->get($val->year);
             $val->acara_price = $acara ? $acara->price : null;
+            return $val;
+        });
+    }
+
+    private function attachInfoautoPrices($valuations, int $versionId, PriceResolverService $resolver): void
+    {
+        $years = $valuations->pluck('year')->map(fn ($y) => (int) $y)->toArray();
+
+        $resolved = $resolver->resolveInfoautoPrices($versionId, $years);
+
+        $valuations->transform(function ($val) use ($resolved) {
+            $entry = $resolved->get((int) $val->year);
+            $val->infoauto_price = $entry ? $entry->price : null;
+            $val->infoauto_price_origin = $entry ? $entry->origin : null;
+            $val->infoauto_price_raw_ars = ($entry && $entry->raw_price_ars_thousands !== null)
+                ? round((float) $entry->raw_price_ars_thousands * 1000, 2)
+                : null;
             return $val;
         });
     }

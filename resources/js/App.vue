@@ -138,6 +138,29 @@
           </span>
         </div>
 
+        <!-- Search source toggle -->
+        <div v-if="searchResults.length" class="flex items-center gap-2 mb-3 sm:mb-4 flex-wrap" data-testid="search-source-toggle">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Fuente:</span>
+          <button
+            @click="setSearchSource('cca')"
+            data-testid="search-source-cca"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="searchSource === 'cca' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >API</button>
+          <button
+            @click="setSearchSource('acara')"
+            data-testid="search-source-acara"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="searchSource === 'acara' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >ACARA</button>
+          <button
+            @click="setSearchSource('infoauto')"
+            data-testid="search-source-infoauto"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="searchSource === 'infoauto' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >InfoAuto</button>
+        </div>
+
         <!-- Search year filter -->
         <div v-if="searchResults.length && availableSearchYears.length > 1" class="flex items-center gap-2 mb-3 sm:mb-4">
           <span class="font-mono text-[10px] sm:text-xs text-cream/30">Año:</span>
@@ -174,8 +197,15 @@
               <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
             </div>
             <div v-if="r.price" class="shrink-0 text-right">
-              <span class="font-mono text-sm sm:text-base text-gold">{{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ formatSearchPrice(r.price) }}</span>
+              <span class="font-mono text-sm sm:text-base text-gold">
+                {{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ searchRowPrice(r) }}
+                <span v-if="r.price_origin === 'predicted'" class="text-cream/40 text-[10px] sm:text-[11px] ml-0.5 font-mono">(estimado)</span>
+              </span>
               <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
+            </div>
+            <div v-else-if="searchSource === 'infoauto' || searchSource === 'acara'" class="shrink-0 text-right">
+              <span class="font-mono text-sm sm:text-base text-cream/30">—</span>
+              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/20 mt-0.5">sin dato</span>
             </div>
             <svg class="w-4 h-4 shrink-0 text-cream/15 group-hover:text-gold/60 transition-colors duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </div>
@@ -283,7 +313,7 @@
         </div>
 
         <!-- Price source toggle -->
-        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6">
+        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6 flex-wrap">
           <span class="font-mono text-[10px] sm:text-xs text-cream/30">Fuente de precio:</span>
           <button
             @click="setSource('api')"
@@ -295,6 +325,11 @@
             class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
             :class="activeSource === 'acara' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
           >ACARA</button>
+          <button
+            @click="setSource('infoauto')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeSource === 'infoauto' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >InfoAuto</button>
         </div>
 
         <!-- Loading indicator -->
@@ -360,8 +395,13 @@
               class="grid grid-cols-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-cream/4 last:border-0 hover:bg-cream/[0.03] transition-colors"
             >
               <span class="font-mono text-sm sm:text-base text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
-              <span v-if="activeSource === 'api' || val.acara_price == null" class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
-              <span v-else class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.acara_price) }}</span>
+              <span v-if="activeSource === 'infoauto' && val.infoauto_price != null" class="font-mono text-sm sm:text-base text-gold text-right">
+                {{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(infoautoDisplay(val)) }}
+                <span v-if="val.infoauto_price_origin === 'predicted'" class="text-cream/40 text-[10px] sm:text-xs ml-1">(estimado)</span>
+              </span>
+              <span v-else-if="activeSource === 'infoauto'" class="font-mono text-sm sm:text-base text-cream/30 text-right">—</span>
+              <span v-else-if="activeSource === 'acara' && val.acara_price != null" class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.acara_price) }}</span>
+              <span v-else class="font-mono text-sm sm:text-base text-gold text-right">{{ activeCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(val.price) }}</span>
             </div>
           </div>
           <!-- Exchange rate info -->
@@ -653,6 +693,7 @@ async function fetchValuations() {
   const params = new URLSearchParams()
   if (activeCurrency.value === 'ARS') params.set('currency', 'ars')
   if (activeSource.value === 'acara') params.set('sources', 'acara')
+  if (activeSource.value === 'infoauto') params.set('sources', 'infoauto')
   const qs = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/api/v1/versions/${selected.version.id}/valuations${qs}`)
   explorer.valuations = res.data
@@ -671,6 +712,13 @@ async function setSource(source) {
   if (selected.version) {
     await fetchValuations()
   }
+}
+
+function infoautoDisplay(val) {
+  if (activeCurrency.value === 'ARS' && val.infoauto_price_raw_ars != null) {
+    return val.infoauto_price_raw_ars
+  }
+  return val.infoauto_price
 }
 
 function resetTo(step) {
@@ -695,6 +743,7 @@ const searchQuery = ref('')
 const searchResults = ref([])
 const searching = ref(false)
 const searchCurrency = ref('USD')
+const searchSource = ref('cca')
 const searchExchangeRates = ref({ oficial: null, blue: null })
 let searchTimeout = null
 
@@ -725,6 +774,15 @@ function formatSearchPrice(priceUsd) {
     return formatPrice(Number(priceUsd) * rate)
   }
   return formatPrice(priceUsd)
+}
+
+// Para ARS_OFICIAL + source con raw_ars: usar el valor absoluto ARS directo
+// Fallback al USD-reconvertido cuando no hay raw.
+function searchRowPrice(r) {
+  if (searchCurrency.value === 'ARS_OFICIAL' && r.price_raw_ars != null) {
+    return formatPrice(r.price_raw_ars)
+  }
+  return formatSearchPrice(r.price)
 }
 
 // Search year filter
@@ -774,14 +832,28 @@ function onSearch() {
   searching.value = true
   currentSearchPage.value = 1
   searchYearFilter.value = null
-  searchTimeout = setTimeout(async () => {
-    try {
-      const res = await apiFetch(`/api/v1/search?q=${encodeURIComponent(searchQuery.value)}&per_page=50`)
-      searchResults.value = res.data
-    } finally {
-      searching.value = false
-    }
-  }, 300)
+  searchTimeout = setTimeout(() => { runSearch() }, 300)
+}
+
+async function runSearch() {
+  searching.value = true
+  try {
+    const sourceParam = searchSource.value !== 'cca' ? `&source=${searchSource.value}` : ''
+    const res = await apiFetch(`/api/v1/search?q=${encodeURIComponent(searchQuery.value)}&per_page=50${sourceParam}`)
+    searchResults.value = res.data
+  } finally {
+    searching.value = false
+  }
+}
+
+async function setSearchSource(source) {
+  if (searchSource.value === source) return
+  searchSource.value = source
+  currentSearchPage.value = 1
+  searchYearFilter.value = null
+  if (searchQuery.value.length >= 2) {
+    await runSearch()
+  }
 }
 
 // Modal

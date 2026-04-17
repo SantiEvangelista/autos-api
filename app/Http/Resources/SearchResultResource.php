@@ -11,7 +11,7 @@ class SearchResultResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'version_id' => $this->id,
             'brand' => $this->carModel->brand->name,
             'brand_slug' => $this->carModel->brand->slug,
@@ -22,5 +22,16 @@ class SearchResultResource extends JsonResource
             'price' => $this->reference_price,
             'price_year' => $this->reference_year !== null ? (int) $this->reference_year : null,
         ];
+
+        if (array_key_exists('reference_origin', $this->resource->getAttributes())) {
+            $data['price_origin'] = $this->resource->reference_origin;
+        }
+
+        if (array_key_exists('reference_raw_ars_thousands', $this->resource->getAttributes())) {
+            $rawThousands = $this->resource->reference_raw_ars_thousands;
+            $data['price_raw_ars'] = $rawThousands !== null ? round((float) $rawThousands * 1000, 2) : null;
+        }
+
+        return $data;
     }
 }
