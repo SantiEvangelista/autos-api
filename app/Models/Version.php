@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Version extends Model
 {
-    protected $fillable = ['car_model_id', 'name'];
+    protected $fillable = ['car_model_id', 'name', 'codia'];
 
     protected function displayName(): Attribute
     {
