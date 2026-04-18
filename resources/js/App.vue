@@ -201,11 +201,11 @@
                 {{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ searchRowPrice(r) }}
                 <span v-if="r.price_origin === 'predicted'" class="text-cream/40 text-[10px] sm:text-[11px] ml-0.5 font-mono">(estimado)</span>
               </span>
-              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
+              <span class="block font-mono text-xs sm:text-sm text-cream mt-1">{{ r.price_year === 0 ? '0 km' : r.price_year }}</span>
             </div>
             <div v-else-if="searchSource === 'infoauto' || searchSource === 'acara'" class="shrink-0 text-right">
               <span class="font-mono text-sm sm:text-base text-cream/30">—</span>
-              <span class="block font-mono text-[10px] sm:text-[11px] text-cream/20 mt-0.5">sin dato</span>
+              <span class="block font-mono text-xs sm:text-sm text-cream/40 mt-1">sin dato</span>
             </div>
             <svg class="w-4 h-4 shrink-0 text-cream/15 group-hover:text-gold/60 transition-colors duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </div>
@@ -485,7 +485,7 @@
             <span class="font-mono text-lg sm:text-xl text-gold">
               {{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ formatSearchPrice(modalResult.price) }}
             </span>
-            <span class="block font-mono text-[10px] sm:text-[11px] text-cream/25 mt-0.5">
+            <span class="block font-mono text-sm sm:text-base text-cream mt-1">
               {{ modalResult.price_year === 0 ? '0 km' : modalResult.price_year }}
             </span>
           </div>
