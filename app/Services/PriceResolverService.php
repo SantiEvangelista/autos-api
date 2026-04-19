@@ -10,20 +10,22 @@ class PriceResolverService
     public const INFOAUTO_FEAT_DATE = '2026-04-17';
 
     /**
-     * Resolve infoauto prices for a version across a set of years.
+     * Resolve infoauto prices for a version.
      *
+     * Pass `$years` to restrict to specific years. Pass `null` to get all years
+     * that have applicable infoauto snapshots for the version (used to surface
+     * rows in the API for years without a CCA valuation).
      *
-     * @param  int[]  $years
+     * @param  int[]|null  $years
      * @return Collection<int, object{price: string, raw_price_ars_thousands: ?string, origin: string, recorded_at: mixed}>
      */
-    public function resolveInfoautoPrices(int $versionId, array $years): Collection
+    public function resolveInfoautoPrices(int $versionId, ?array $years = null): Collection
     {
-        if (empty($years)) {
+        if ($years !== null && empty($years)) {
             return collect();
         }
 
-        $snapshots = PriceSnapshot::where('version_id', $versionId)
-            ->whereIn('year', $years)
+        $query = PriceSnapshot::where('version_id', $versionId)
             ->whereIn('source', ['infoauto', 'infoauto_predicted'])
             ->where(function ($q) {
                 $q->where('source', 'infoauto_predicted')
@@ -31,7 +33,13 @@ class PriceResolverService
                         $qq->where('source', 'infoauto')
                             ->where('recorded_at', '>=', self::INFOAUTO_FEAT_DATE);
                     });
-            })
+            });
+
+        if ($years !== null) {
+            $query->whereIn('year', $years);
+        }
+
+        $snapshots = $query
             ->orderByDesc('recorded_at')
             ->orderBy('id', 'desc')
             ->get();
