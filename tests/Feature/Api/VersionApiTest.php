@@ -744,3 +744,149 @@ it('executes a single query for infoauto resolution regardless of year count', f
 
     expect($infoautoQueryCount)->toBe(1);
 });
+
+// =============================================
+// Ciclo 7: Row para años con infoauto pero sin valuation CCA
+// =============================================
+
+it('surfaces rows for years with infoauto snapshots but no CCA valuation', function () {
+    PriceSnapshot::create([
+        'version_id' => $this->version->id,
+        'year' => 2021,
+        'price' => 25000.00,
+        'source' => 'infoauto',
+        'recorded_at' => '2026-04-17',
+    ]);
+
+    $response = $this->getJson("/api/v1/versions/{$this->version->id}/valuations?sources=infoauto");
+
+    $response->assertOk();
+    $years = collect($response->json('data'))->pluck('year')->all();
+    expect($years)->toBe([2025, 2024, 2021, 0]);
+
+    $row2021 = collect($response->json('data'))->firstWhere('year', 2021);
+    expect($row2021['price'])->toBeNull();
+    expect($row2021['infoauto_price'])->toBe('25000.00');
+    expect($row2021['infoauto_price_origin'])->toBe('real');
+});
+
+it('surfaces a 0km row when infoauto has 0km but CCA does not', function () {
+    Valuation::where('version_id', $this->version->id)->where('year', 0)->delete();
+
+    PriceSnapshot::create([
+        'version_id' => $this->version->id,
+        'year' => 0,
+        'price' => 48000.00,
+        'raw_price_ars_thousands' => 66672.00,
+        'source' => 'infoauto',
+        'recorded_at' => '2026-04-17',
+    ]);
+
+    $response = $this->getJson("/api/v1/versions/{$this->version->id}/valuations?sources=infoauto");
+
+    $response->assertOk();
+    $years = collect($response->json('data'))->pluck('year')->all();
+    expect($years)->toBe([2025, 2024, 0]);
+
+    $row0 = collect($response->json('data'))->firstWhere('year', 0);
+    expect($row0['price'])->toBeNull();
+    expect($row0['infoauto_price'])->toBe('48000.00');
+    expect($row0['infoauto_price_raw_ars'])->toBe('66672000.00');
+});
+
+it('keeps null price on rows when currency=ars (no corruption)', function () {
+    Http::fake([
+        'api.bluelytics.com.ar/*' => Http::response([
+            'oficial' => ['value_sell' => 1400.0],
+        ]),
+    ]);
+
+    PriceSnapshot::create([
+        'version_id' => $this->version->id,
+        'year' => 2021,
+        'price' => 25000.00,
+        'source' => 'infoauto',
+        'recorded_at' => '2026-04-17',
+    ]);
+
+    $response = $this->getJson("/api/v1/versions/{$this->version->id}/valuations?sources=infoauto&currency=ars");
+
+    $response->assertOk();
+    $row2021 = collect($response->json('data'))->firstWhere('year', 2021);
+    expect($row2021['price'])->toBeNull();
+    expect($row2021['infoauto_price'])->toBe('35000000.00');
+});
+
+it('omits price_formatted on rows when format_price=true', function () {
+    PriceSnapshot::create([
+        'version_id' => $this->version->id,
+        'year' => 2021,
+        'price' => 25000.00,
+        'source' => 'infoauto',
+        'recorded_at' => '2026-04-17',
+    ]);
+
+    $response = $this->getJson("/api/v1/versions/{$this->version->id}/valuations?sources=infoauto&format_price=true");
+
+    $response->assertOk();
+    $row2021 = collect($response->json('data'))->firstWhere('year', 2021);
+    expect(array_key_exists('price_formatted', $row2021))->toBeFalse();
+    expect($row2021['infoauto_price_formatted'])->toBe('US$25.000,00');
+});
+
+it('does not add rows when sources=infoauto is not requested', function () {
+    PriceSnapshot::create([
+        'version_id' => $this->version->id,
+        'year' => 2021,
+        'price' => 25000.00,
+        'source' => 'infoauto',
+        'recorded_at' => '2026-04-17',
+    ]);
+
+    $response = $this->getJson("/api/v1/versions/{$this->version->id}/valuations");
+
+    $response->assertOk();
+    $years = collect($response->json('data'))->pluck('year')->all();
+    expect($years)->toBe([2025, 2024, 0]);
+});
+
+it('does not add rows for infoauto snapshots recorded before the feat date', function () {
+    PriceSnapshot::create([
+        'version_id' => $this->version->id,
+        'year' => 2021,
+        'price' => 25000.00,
+        'source' => 'infoauto',
+        'recorded_at' => '2026-04-10',
+    ]);
+
+    $response = $this->getJson("/api/v1/versions/{$this->version->id}/valuations?sources=infoauto");
+
+    $response->assertOk();
+    $years = collect($response->json('data'))->pluck('year')->all();
+    expect($years)->toBe([2025, 2024, 0]);
+});
+
+it('keeps single infoauto query when adding rows', function () {
+    foreach ([2020, 2021, 2022] as $year) {
+        PriceSnapshot::create([
+            'version_id' => $this->version->id,
+            'year' => $year,
+            'price' => 20000 + $year,
+            'source' => 'infoauto',
+            'recorded_at' => '2026-04-17',
+        ]);
+    }
+
+    $infoautoQueryCount = 0;
+    \Illuminate\Support\Facades\DB::listen(function ($query) use (&$infoautoQueryCount) {
+        if (str_contains($query->sql, 'price_snapshots')
+            && (str_contains($query->sql, "'infoauto'") || in_array('infoauto', $query->bindings))
+            && (str_contains($query->sql, "'infoauto_predicted'") || in_array('infoauto_predicted', $query->bindings))) {
+            $infoautoQueryCount++;
+        }
+    });
+
+    $this->getJson("/api/v1/versions/{$this->version->id}/valuations?sources=infoauto")->assertOk();
+
+    expect($infoautoQueryCount)->toBe(1);
+});

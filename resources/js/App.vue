@@ -458,7 +458,7 @@
       @click.self="closeModal"
       class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-navy-deep/80 backdrop-blur-sm"
     >
-      <div class="relative w-full max-w-md bg-navy-deep border border-cream/10 rounded-xl p-6 sm:p-8 shadow-2xl">
+      <div class="relative w-full max-w-md bg-navy-deep border border-cream/10 rounded-xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
         <!-- Close -->
         <button @click="closeModal" class="absolute top-4 right-4 text-cream/30 hover:text-cream/70 transition-colors cursor-pointer">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -478,19 +478,41 @@
         <!-- Divider -->
         <div class="border-t border-cream/8 my-4 sm:my-5"></div>
 
-        <!-- Price -->
-        <div v-if="modalResult.price" class="flex items-baseline justify-between">
-          <span class="font-mono text-[10px] sm:text-xs text-cream/30 uppercase tracking-wider">Precio referencia</span>
-          <div class="text-right">
-            <span class="font-mono text-lg sm:text-xl text-gold">
-              {{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ formatSearchPrice(modalResult.price) }}
-            </span>
-            <span class="block font-mono text-sm sm:text-base text-cream mt-1">
-              {{ modalResult.price_year === 0 ? '0 km' : modalResult.price_year }}
+        <!-- Loading -->
+        <div v-if="modalLoading" class="text-cream/40 text-sm text-center py-6">Cargando precios...</div>
+
+        <!-- Valuations table -->
+        <div v-else-if="modalValuations.length" class="bg-cream/[0.03] border border-cream/6 rounded-lg overflow-hidden">
+          <div class="grid grid-cols-2 px-4 py-2.5 border-b border-cream/6">
+            <span class="font-mono text-[10px] sm:text-xs text-cream/30 uppercase tracking-wider">Año</span>
+            <span class="font-mono text-[10px] sm:text-xs text-cream/30 uppercase tracking-wider text-right">
+              Precio ({{ searchCurrency === 'USD' ? 'USD' : 'ARS' }})
             </span>
           </div>
+          <div
+            v-for="val in modalValuations"
+            :key="`${val.version_id}-${val.year}`"
+            class="grid grid-cols-2 px-4 py-2.5 border-b border-cream/4 last:border-0"
+          >
+            <span class="font-mono text-sm text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
+            <template v-if="modalRowPrice(val).price != null">
+              <span class="font-mono text-sm text-gold text-right">
+                {{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ formatPrice(modalRowPrice(val).price) }}
+                <span v-if="modalRowPrice(val).origin === 'predicted'" class="text-cream/40 text-[10px] ml-1">(estimado)</span>
+              </span>
+            </template>
+            <span v-else class="font-mono text-sm text-cream/30 text-right">—</span>
+          </div>
         </div>
-        <div v-else class="text-cream/30 text-sm">Precio no disponible</div>
+
+        <!-- Empty -->
+        <div v-else class="text-cream/30 text-sm text-center py-6">Sin valuaciones disponibles.</div>
+
+        <!-- Exchange rate note -->
+        <div v-if="searchCurrency !== 'USD' && (searchExchangeRates.oficial || searchExchangeRates.blue)" class="mt-3 font-mono text-[10px] sm:text-[11px] text-cream/25">
+          Dólar {{ searchCurrency === 'ARS_BLUE' ? 'blue' : 'oficial' }}:
+          ${{ formatPrice(searchCurrency === 'ARS_BLUE' ? searchExchangeRates.blue : searchExchangeRates.oficial) }} ARS/USD
+        </div>
 
         <!-- Version raw -->
         <div class="mt-4 sm:mt-5">
@@ -858,8 +880,74 @@ async function setSearchSource(source) {
 
 // Modal
 const modalResult = ref(null)
-function openModal(result) { modalResult.value = result }
-function closeModal() { modalResult.value = null }
+const modalValuations = ref([])
+const modalMeta = ref(null)
+const modalLoading = ref(false)
+
+async function openModal(result) {
+  modalResult.value = result
+  modalValuations.value = []
+  modalMeta.value = null
+  modalLoading.value = true
+  try {
+    const params = new URLSearchParams()
+    // Explorer API only understands USD/ARS; ARS_BLUE is reformatted client-side.
+    if (searchCurrency.value === 'ARS_OFICIAL') params.set('currency', 'ars')
+    if (searchSource.value === 'infoauto') params.set('sources', 'infoauto')
+    else if (searchSource.value === 'acara') params.set('sources', 'acara')
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    const res = await apiFetch(`/api/v1/versions/${result.version_id}/valuations${qs}`)
+    modalValuations.value = res.data || []
+    modalMeta.value = res.meta || null
+  } finally {
+    modalLoading.value = false
+  }
+}
+
+function closeModal() {
+  modalResult.value = null
+  modalValuations.value = []
+  modalMeta.value = null
+}
+
+// Precio a mostrar en una fila del modal segun source/currency activo.
+// Retorna { price: number|null, origin: 'real'|'predicted'|null }.
+function modalRowPrice(val) {
+  if (searchSource.value === 'infoauto') {
+    const real = val.infoauto_price
+    if (real == null) return { price: null, origin: null }
+    if (searchCurrency.value === 'ARS_OFICIAL' && val.infoauto_price_raw_ars != null) {
+      return { price: Number(val.infoauto_price_raw_ars), origin: val.infoauto_price_origin }
+    }
+    if (searchCurrency.value === 'ARS_BLUE' && searchExchangeRates.value.blue) {
+      // infoauto_price viene en USD cuando no pedimos currency=ars. Pero con sources=infoauto
+      // y currency=ars_oficial, viene convertido a ARS oficial. Para ARS_BLUE reconstruimos
+      // desde raw (absoluto) o desde USD pidiendo sin currency. Simple: en ARS_BLUE, el
+      // fetch no envia currency=ars, asi que infoauto_price esta en USD. Multiplicamos por blue.
+      return { price: Number(real) * searchExchangeRates.value.blue, origin: val.infoauto_price_origin }
+    }
+    return { price: Number(real), origin: val.infoauto_price_origin }
+  }
+  if (searchSource.value === 'acara') {
+    if (val.acara_price == null) return { price: null, origin: null }
+    if (searchCurrency.value === 'ARS_BLUE' && searchExchangeRates.value.blue) {
+      return { price: Number(val.acara_price) * searchExchangeRates.value.blue, origin: null }
+    }
+    return { price: Number(val.acara_price), origin: null }
+  }
+  // cca: val.price esta en USD (o ARS oficial si pedimos currency=ars).
+  if (searchCurrency.value === 'ARS_BLUE' && searchExchangeRates.value.blue) {
+    return { price: Number(val.price) * searchExchangeRates.value.blue, origin: null }
+  }
+  return { price: Number(val.price), origin: null }
+}
+
+// Re-fetch modal valuations cuando el usuario cambia moneda/fuente con el modal abierto.
+watch([searchCurrency, searchSource], () => {
+  if (modalResult.value) {
+    openModal(modalResult.value)
+  }
+})
 
 // Contact modal
 const showContact = ref(false)
