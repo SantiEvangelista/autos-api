@@ -146,7 +146,7 @@
             data-testid="search-source-cca"
             class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
             :class="searchSource === 'cca' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >API</button>
+          >CCA</button>
           <button
             @click="setSearchSource('acara')"
             data-testid="search-source-acara"
@@ -305,7 +305,7 @@
             @click="setSource('api')"
             class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
             :class="activeSource === 'api' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >API</button>
+          >CCA</button>
           <button
             @click="setSource('acara')"
             class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
