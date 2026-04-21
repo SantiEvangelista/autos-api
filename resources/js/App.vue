@@ -196,7 +196,7 @@
               </div>
               <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
             </div>
-            <div v-if="r.price" class="shrink-0 text-right">
+            <div v-if="searchRowHasPrice(r)" class="shrink-0 text-right">
               <span class="font-mono text-sm sm:text-base text-gold">
                 {{ searchCurrency === 'USD' ? 'US$' : '$' }}{{ searchRowPrice(r) }}
                 <span v-if="r.price_origin === 'predicted'" class="text-cream/40 text-[10px] sm:text-[11px] ml-0.5 font-mono">(estimado)</span>
@@ -801,10 +801,36 @@ function formatSearchPrice(priceUsd) {
 // Para ARS_OFICIAL + source con raw_ars: usar el valor absoluto ARS directo
 // Fallback al USD-reconvertido cuando no hay raw.
 function searchRowPrice(r) {
-  if (searchCurrency.value === 'ARS_OFICIAL' && r.price_raw_ars != null) {
-    return formatPrice(r.price_raw_ars)
+  const rateBlue = searchExchangeRates.value.blue
+  const rateOficial = searchExchangeRates.value.oficial
+
+  if (searchCurrency.value === 'ARS_OFICIAL') {
+    if (r.price_raw_ars != null) return formatPrice(r.price_raw_ars)
+    if (r.price != null && rateOficial) return formatPrice(Number(r.price) * rateOficial)
+    return '—'
   }
-  return formatSearchPrice(r.price)
+
+  if (searchCurrency.value === 'ARS_BLUE') {
+    if (r.price != null && rateBlue) return formatPrice(Number(r.price) * rateBlue)
+    if (r.price_raw_ars != null && rateOficial && rateBlue) {
+      return formatPrice((Number(r.price_raw_ars) / rateOficial) * rateBlue)
+    }
+    if (r.price_raw_ars != null) return formatPrice(r.price_raw_ars)
+    return '—'
+  }
+
+  // USD
+  if (r.price != null) return formatSearchPrice(r.price)
+  if (r.price_raw_ars != null && rateOficial) {
+    return formatSearchPrice(Number(r.price_raw_ars) / rateOficial)
+  }
+  return '—'
+}
+
+// true cuando la fila tiene ALGÚN precio disponible (USD o ARS).
+// Reemplaza el v-if="r.price" que fallaba cuando price_usd era null.
+function searchRowHasPrice(r) {
+  return r.price != null || r.price_raw_ars != null
 }
 
 // Search year filter
