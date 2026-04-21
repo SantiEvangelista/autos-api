@@ -194,7 +194,7 @@
                 <span class="text-cream/15">&middot;</span>
                 <span class="text-sm sm:text-base text-cream/70 truncate">{{ r.model }}</span>
               </div>
-              <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ r.version }}</span>
+              <span class="text-xs sm:text-sm text-cream/40 mt-1 truncate">{{ searchSource === 'infoauto' ? (r.version_raw ?? r.version) : r.version }}</span>
             </div>
             <div v-if="searchRowHasPrice(r)" class="shrink-0 text-right">
               <span class="font-mono text-sm sm:text-base text-gold">
@@ -297,23 +297,9 @@
           </template>
         </div>
 
-        <!-- Currency toggle -->
-        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-2 sm:mb-3">
-          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
-          <button
-            @click="setCurrency('USD')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="activeCurrency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >USD</button>
-          <button
-            @click="setCurrency('ARS')"
-            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
-            :class="activeCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
-          >ARS</button>
-        </div>
-
-        <!-- Price source toggle -->
-        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6 flex-wrap">
+        <!-- Fuente (se muestra al elegir el modelo para que puedan alternar CCA/InfoAuto
+             antes de elegir la variante, porque cada fuente tiene su propio catálogo de versiones). -->
+        <div v-if="currentStep === 'versions' || currentStep === 'valuations'" class="flex items-center gap-2 mb-2 sm:mb-3 flex-wrap">
           <span class="font-mono text-[10px] sm:text-xs text-cream/30">Fuente de precio:</span>
           <button
             @click="setSource('api')"
@@ -330,6 +316,21 @@
             class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
             :class="activeSource === 'infoauto' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
           >InfoAuto</button>
+        </div>
+
+        <!-- Moneda: sólo tiene sentido cuando ya hay grilla (step valuations). -->
+        <div v-if="currentStep === 'valuations'" class="flex items-center gap-2 mb-4 sm:mb-6">
+          <span class="font-mono text-[10px] sm:text-xs text-cream/30">Moneda:</span>
+          <button
+            @click="setCurrency('USD')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeCurrency === 'USD' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >USD</button>
+          <button
+            @click="setCurrency('ARS')"
+            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors"
+            :class="activeCurrency === 'ARS' ? 'bg-gold/90 text-navy-deep' : 'text-cream/40 hover:text-cream/70'"
+          >ARS</button>
         </div>
 
         <!-- Loading indicator -->
@@ -472,8 +473,7 @@
         <!-- Model -->
         <h3 class="text-xl sm:text-2xl font-light text-cream mt-1">{{ modalResult.model }}</h3>
 
-        <!-- Version (humanized) -->
-        <p class="text-sm sm:text-base text-cream/50 mt-1">{{ modalResult.version }}</p>
+        <p class="text-sm sm:text-base text-cream/50 mt-1">{{ searchSource === 'infoauto' ? (modalResult.version_raw ?? modalResult.version) : modalResult.version }}</p>
 
         <!-- Divider -->
         <div class="border-t border-cream/8 my-4 sm:my-5"></div>
@@ -514,8 +514,7 @@
           ${{ formatPrice(searchCurrency === 'ARS_BLUE' ? searchExchangeRates.blue : searchExchangeRates.oficial) }} ARS/USD
         </div>
 
-        <!-- Version raw -->
-        <div class="mt-4 sm:mt-5">
+        <div v-if="searchSource !== 'infoauto' && modalResult.version_raw && modalResult.version_raw !== modalResult.version" class="mt-4 sm:mt-5">
           <span class="font-mono text-[10px] sm:text-xs text-cream/20 tracking-wider uppercase">Nombre tecnico</span>
           <p class="font-mono text-xs sm:text-sm text-cream/40 mt-0.5">{{ modalResult.version_raw }}</p>
         </div>
@@ -702,7 +701,34 @@ async function selectBrand(brand) {
 async function selectModel(model) {
   selected.model = model
   selected.version = null
-  const res = await apiFetch(`/api/v1/models/${model.id}/versions?per_page=100`)
+  await fetchVersionsForSelectedModel()
+}
+
+// Carga la lista de versiones según la fuente activa.
+// - cca / acara → versiones del catálogo CCA (tabla `versions`, flujo legacy).
+// - infoauto   → variantes del read model InfoAuto (`infoauto_catalog`), trae el
+//   nombre técnico EXACTO del CSV y su external_id (`ia_<id>`) para luego pegarle
+//   al endpoint `/infoauto/catalog/{ext}/prices` y mostrar la grilla 1:1 con el CSV.
+//   Esto evita el desalineamiento histórico que producía el matcher fuzzy
+//   (mismo modelo, precios distintos entre buscador y explorer).
+async function fetchVersionsForSelectedModel() {
+  if (!selected.brand || !selected.model) {
+    explorer.versions = []
+    return
+  }
+  if (activeSource.value === 'infoauto') {
+    const q = deriveInfoautoSearchQuery(selected.brand.name, selected.model.name)
+    // SearchRequest limita per_page a max 50. Para 99% de familias alcanza.
+    const params = new URLSearchParams({ q, source: 'infoauto', per_page: '50' })
+    const res = await apiFetch(`/api/v1/search?${params.toString()}`)
+    explorer.versions = (res.data || []).map((r) => ({
+      id: r.external_id,
+      external_id: r.external_id,
+      name: r.version_raw ?? r.version, // nombre técnico EXACTO del CSV
+    }))
+    return
+  }
+  const res = await apiFetch(`/api/v1/models/${selected.model.id}/versions?per_page=100`)
   explorer.versions = res.data
 }
 
@@ -712,10 +738,31 @@ async function selectVersion(version) {
 }
 
 async function fetchValuations() {
+  // Infoauto → endpoint dedicado del read model. Precios 1:1 con el CSV.
+  if (selected.version?.external_id) {
+    const params = new URLSearchParams()
+    if (activeCurrency.value === 'ARS') params.set('currency', 'ars')
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    const res = await apiFetch(
+      `/api/v1/infoauto/catalog/${selected.version.external_id}/prices${qs}`
+    )
+    explorer.valuations = (res.data || []).map((r) => ({
+      id: `${selected.version.external_id}-${r.year}`,
+      year: r.year,
+      price: r.price,
+      infoauto_price: r.price,
+      infoauto_price_raw_ars:
+        r.price_ars_thousands != null ? Number(r.price_ars_thousands) * 1000 : null,
+      infoauto_price_origin: r.origin,
+    }))
+    explorer.meta = res.meta
+    return
+  }
+
+  // CCA / ACARA → endpoint legacy.
   const params = new URLSearchParams()
   if (activeCurrency.value === 'ARS') params.set('currency', 'ars')
   if (activeSource.value === 'acara') params.set('sources', 'acara')
-  if (activeSource.value === 'infoauto') params.set('sources', 'infoauto')
   const qs = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/api/v1/versions/${selected.version.id}/valuations${qs}`)
   explorer.valuations = res.data
@@ -729,11 +776,34 @@ async function setCurrency(currency) {
   }
 }
 
+// Cambiar fuente con brand+model seleccionados fuerza re-fetch de versiones,
+// porque CCA e InfoAuto no comparten el mismo universo de variantes ni el
+// mismo id. Si había una version seleccionada se descarta (el user tiene que
+// elegir otra del catálogo correspondiente).
 async function setSource(source) {
   activeSource.value = source
-  if (selected.version) {
-    await fetchValuations()
+  if (selected.model) {
+    selected.version = null
+    explorer.valuations = []
+    explorer.meta = null
+    await fetchVersionsForSelectedModel()
   }
+}
+
+// El `car_models.name` de CCA no siempre coincide con `model_name` en el
+// catálogo InfoAuto (ej. Honda "F i T" ↔ "FIT", Toyota "HILUX PICK UP" ↔ "HILUX").
+// Normalizamos al query el brand completo + el primer token significativo del
+// model, o el model compactado cuando todos los tokens son de 1 caracter.
+// Compromiso pragmático: prioriza no devolver vacío; si sobran variantes
+// (ej. "COROLLA CROSS" → trae también Corolla sedán), el usuario las identifica
+// por el nombre técnico EXACTO que muestra cada fila.
+function deriveInfoautoSearchQuery(brandName, modelName) {
+  const tokens = modelName.split(/\s+/).filter(Boolean)
+  if (tokens.length === 0) return brandName
+  const allOneChar = tokens.every((t) => t.length === 1)
+  if (allOneChar) return `${brandName} ${tokens.join('')}`
+  const firstSignificant = tokens.find((t) => t.length >= 2) ?? tokens[0]
+  return `${brandName} ${firstSignificant}`
 }
 
 function infoautoDisplay(val) {
