@@ -11,8 +11,16 @@ class InfoautoSearchResultResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $latest = $this->priceHistory
-            ->sortBy(fn ($p) => $p->origin === 'real' ? 0 : 1)
+        // Priorizar real sobre predicted. Si hay cualquier row real, tomar el más
+        // reciente de ellos (por recorded_at). Si no hay real, fallback al más
+        // reciente de predicted. `sortBy`+`sortByDesc` encadenados NO funcionan
+        // porque el segundo sort reordena todo, anulando la priorización por origen.
+        $real = $this->priceHistory
+            ->where('origin', 'real')
+            ->sortByDesc('recorded_at')
+            ->first();
+
+        $latest = $real ?? $this->priceHistory
             ->sortByDesc('recorded_at')
             ->first();
 
@@ -24,6 +32,7 @@ class InfoautoSearchResultResource extends JsonResource
             'brand' => $this->brand_name,
             'model' => $this->model_name,
             'version' => $this->version_name_public ?? $this->version_name_raw,
+            'version_raw' => $this->version_name_raw,
             'price' => $priceUsd !== null ? (float) $priceUsd : null,
             'price_raw_ars' => $priceArsThousands !== null ? round((float) $priceArsThousands * 1000, 2) : null,
             'price_year' => $latest?->year,

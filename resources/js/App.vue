@@ -184,7 +184,7 @@
         <div v-if="filteredSearchResults.length" class="space-y-2.5 sm:space-y-3">
           <div
             v-for="r in paginatedSearchResults"
-            :key="r.version_id"
+            :key="r.version_id ?? r.external_id"
             @click="openModal(r)"
             class="group flex items-center gap-4 sm:gap-5 px-4 sm:px-5 py-3.5 sm:py-4 rounded-lg bg-cream/[0.03] border border-cream/6 hover:bg-cream/[0.06] hover:border-gold/25 transition-all duration-300 cursor-pointer"
           >
@@ -491,7 +491,7 @@
           </div>
           <div
             v-for="val in modalValuations"
-            :key="`${val.version_id}-${val.year}`"
+            :key="`${val.version_id ?? val.external_id}-${val.year}`"
             class="grid grid-cols-2 px-4 py-2.5 border-b border-cream/4 last:border-0"
           >
             <span class="font-mono text-sm text-cream/70">{{ val.year === 0 ? '0 km' : val.year }}</span>
@@ -890,11 +890,34 @@ async function openModal(result) {
   modalMeta.value = null
   modalLoading.value = true
   try {
+    // source=infoauto: el read model usa external_id (ia_<id>), no version_id.
+    // Ir al endpoint dedicado y mapear la grilla al shape que el modal espera
+    // (las keys que consume modalRowPrice: infoauto_price, infoauto_price_raw_ars,
+    // infoauto_price_origin).
+    if (result.external_id) {
+      const params = new URLSearchParams()
+      if (searchCurrency.value === 'ARS_OFICIAL') params.set('currency', 'ars')
+      const qs = params.toString() ? `?${params.toString()}` : ''
+      const res = await apiFetch(`/api/v1/infoauto/catalog/${result.external_id}/prices${qs}`)
+      modalValuations.value = (res.data || []).map((r) => ({
+        external_id: result.external_id,
+        year: r.year,
+        // price del shape legacy = USD; mantenemos para compatibilidad con el render genérico.
+        price: r.price,
+        // Los tres campos que `modalRowPrice(val)` consume para source=infoauto.
+        infoauto_price: r.price,
+        infoauto_price_raw_ars:
+          r.price_ars_thousands != null ? Number(r.price_ars_thousands) * 1000 : null,
+        infoauto_price_origin: r.origin,
+      }))
+      modalMeta.value = res.meta || null
+      return
+    }
+
+    // source=cca | source=acara: endpoint legacy /versions/{id}/valuations.
     const params = new URLSearchParams()
-    // Explorer API only understands USD/ARS; ARS_BLUE is reformatted client-side.
     if (searchCurrency.value === 'ARS_OFICIAL') params.set('currency', 'ars')
-    if (searchSource.value === 'infoauto') params.set('sources', 'infoauto')
-    else if (searchSource.value === 'acara') params.set('sources', 'acara')
+    if (searchSource.value === 'acara') params.set('sources', 'acara')
     const qs = params.toString() ? `?${params.toString()}` : ''
     const res = await apiFetch(`/api/v1/versions/${result.version_id}/valuations${qs}`)
     modalValuations.value = res.data || []
