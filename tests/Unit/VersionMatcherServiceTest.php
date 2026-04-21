@@ -2,6 +2,7 @@
 
 use App\Models\Brand;
 use App\Models\CarModel;
+use App\Models\PriceSnapshot;
 use App\Models\Version;
 use App\Services\VersionMatcherService;
 
@@ -66,6 +67,23 @@ beforeEach(function () {
     $cronos = CarModel::create(['brand_id' => $fiat->id, 'name' => 'CRONOS', 'slug' => 'cronos']);
     Version::create(['car_model_id' => $cronos->id, 'name' => '4P 1,3 LIKE GSE 2023']);
     Version::create(['car_model_id' => $cronos->id, 'name' => '4P 1,3 LIKE GSE 2025']);
+    $pulse = CarModel::create(['brand_id' => $fiat->id, 'name' => 'PULSE', 'slug' => 'pulse']);
+    Version::create(['car_model_id' => $pulse->id, 'name' => '5P 1,3 DRIVE CVT 2025']);
+    Version::create(['car_model_id' => $pulse->id, 'name' => '5P 270 TURBO ABARTH 6AT 2026']);
+
+    // HONDA
+    $honda = Brand::create(['name' => 'HONDA', 'slug' => 'honda']);
+    $hrv = CarModel::create(['brand_id' => $honda->id, 'name' => 'HR-V', 'slug' => 'hr-v']);
+    Version::create(['car_model_id' => $hrv->id, 'name' => '5P 1,5 LX CVT 2025']);
+    Version::create(['car_model_id' => $hrv->id, 'name' => '5P 1,5 EXL CVT 2025']);
+    Version::create(['car_model_id' => $hrv->id, 'name' => '5P 1,8 EX L 2WD CVT 2019']);
+    $zrv = CarModel::create(['brand_id' => $honda->id, 'name' => 'ZR-V', 'slug' => 'zr-v']);
+    Version::create(['car_model_id' => $zrv->id, 'name' => '5P 2,0 CVT TRG']);
+
+    // RENAULT
+    $renault = Brand::create(['name' => 'RENAULT', 'slug' => 'renault']);
+    $kardian = CarModel::create(['brand_id' => $renault->id, 'name' => 'KARDIAN', 'slug' => 'kardian']);
+    Version::create(['car_model_id' => $kardian->id, 'name' => '5P 1,0 T AT6 ICONIC 2025']);
 
     // PORSCHE
     $porsche = Brand::create(['name' => 'PORSCHE', 'slug' => 'porsche']);
@@ -73,6 +91,12 @@ beforeEach(function () {
     $macan = CarModel::create(['brand_id' => $porsche->id, 'name' => 'MACAN', 'slug' => 'macan']);
     Version::create(['car_model_id' => $boxster->id, 'name' => '2P 2,0 BOXSTER']);
     Version::create(['car_model_id' => $macan->id, 'name' => '5P 2,0 T 252CV']);
+
+    // CITROEN
+    $citroen = Brand::create(['name' => 'CITROEN', 'slug' => 'citroen']);
+    $c3Aircross = CarModel::create(['brand_id' => $citroen->id, 'name' => 'C 3 AIRCROSS', 'slug' => 'c-3-aircross']);
+    Version::create(['car_model_id' => $c3Aircross->id, 'name' => '5P T200 FEEL PK 2024']);
+    Version::create(['car_model_id' => $c3Aircross->id, 'name' => '5P 1,6 VTI FEEL PK 2024']);
 });
 
 // === Fix 2: Brand aliases ===
@@ -203,6 +227,125 @@ it('prefers matching candidate year for BMW 0km names', function () {
 
     expect($result)->not->toBeNull()
         ->and($result->name)->toBe('5P 1,5 T 7AT ADVANTAGE 2025');
+});
+
+it('normalizes ctv to cvt when matching infoauto names', function () {
+    $result = $this->matcher->findVersion('HONDA', 'HR-V', 'HR-V 1.5 LX CTV L/25');
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 1,5 LX CVT 2025');
+});
+
+it('normalizes ex l to exl when matching infoauto names', function () {
+    $result = $this->matcher->findVersion('HONDA', 'HR-V', 'HR-V 1.8 EXL CVT L/19');
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 1,8 EX L 2WD CVT 2019');
+});
+
+it('maps touring infoauto names to trg local abbreviations', function () {
+    $result = $this->matcher->findVersion('HONDA', 'ZR-V', 'ZR-V 2.0 TOURING');
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 2,0 CVT TRG');
+});
+
+it('matches full magazine titles without explicit model splitting', function () {
+    $catalog = Version::query()->with(['carModel.brand'])->get();
+
+    $result = $this->matcher->findVersionByInfoautoName('HONDA HR-V 1.5 EXL CVT L/25', null, $catalog);
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 1,5 EXL CVT 2025');
+});
+
+it('matches magazine title with brand hint and implicit model context', function () {
+    $catalog = Version::query()->with(['carModel.brand'])->get();
+
+    $result = $this->matcher->findVersionByInfoautoName('PULSE 1.3 DRIVE CVT L/25', 'FIAT', $catalog);
+
+    expect($result)->not->toBeNull()
+        ->and($result->carModel->slug)->toBe('pulse');
+});
+
+it('prefers the explicit brand in the title over a stale section brand hint', function () {
+    $catalog = Version::query()->with(['carModel.brand'])->get();
+
+    $result = $this->matcher->findVersionByInfoautoName('HONDA HR-V 1.5 EXL CVT L/25', 'FIAT', $catalog);
+
+    expect($result)->not->toBeNull()
+        ->and($result->carModel->brand->slug)->toBe('honda');
+});
+
+it('matches numbered magazine titles after normalization', function () {
+    $catalog = Version::query()->with(['carModel.brand'])->get();
+
+    $result = $this->matcher->findVersionByInfoautoName('1. HONDA HR-V 1.5 EXL CVT L/25', null, $catalog);
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 1,5 EXL CVT 2025');
+});
+
+it('matches citroen c3 aircross feel pk despite local engine code naming', function () {
+    $catalog = Version::query()->with(['carModel.brand'])->get();
+
+    $result = $this->matcher->findVersionByInfoautoName('C3 AIRCROSS 1.3 FEEL PK', 'Citroen', $catalog);
+
+    expect($result)->not->toBeNull()
+        ->and($result->carModel->slug)->toBe('c-3-aircross')
+        ->and($result->name)->toBe('5P T200 FEEL PK 2024');
+});
+
+it('breaks ties using observed 0km price when infoauto title is ambiguous', function () {
+    $catalog = Version::query()->with([
+        'carModel.brand',
+        'priceSnapshots' => fn ($query) => $query
+            ->where('source', 'infoauto')
+            ->where('year', 0)
+            ->orderByDesc('recorded_at'),
+    ])->get();
+
+    $candidates = Version::query()
+        ->whereHas('carModel', fn ($query) => $query->where('slug', 'c-3-aircross'))
+        ->get();
+
+    foreach ($candidates as $candidate) {
+        PriceSnapshot::create([
+            'version_id' => $candidate->id,
+            'year' => 0,
+            'price' => 0,
+            'raw_price_ars_thousands' => $candidate->name === '5P T200 FEEL PK 2024' ? 36900 : 31200,
+            'source' => 'infoauto',
+            'recorded_at' => '2026-04-13',
+        ]);
+    }
+
+    $catalog = Version::query()->with([
+        'carModel.brand',
+        'priceSnapshots' => fn ($query) => $query
+            ->where('source', 'infoauto')
+            ->where('year', 0)
+            ->orderByDesc('recorded_at'),
+    ])->get();
+
+    $result = $this->matcher->findVersionByInfoautoName(
+        'C3 AIRCROSS 1.3 FEEL PK',
+        'Citroen',
+        $catalog,
+        [0 => 36900.0],
+    );
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P T200 FEEL PK 2024');
+});
+
+it('normalizes edc and dct style transmission labels from infoauto titles', function () {
+    $catalog = Version::query()->with(['carModel.brand'])->get();
+
+    $result = $this->matcher->findVersionByInfoautoName('Kardian 1.0T Iconic 200 EDC L/25', 'RENAULT', $catalog);
+
+    expect($result)->not->toBeNull()
+        ->and($result->name)->toBe('5P 1,0 T AT6 ICONIC 2025');
 });
 
 it('infers the correct Porsche model from the version name context', function () {

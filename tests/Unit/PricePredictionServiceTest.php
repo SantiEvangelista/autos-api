@@ -64,8 +64,8 @@ it('applies model year premium before generating years', function () {
     );
 
     expect($prices)->toBe([
-        2025 => 31000.0,
-        2024 => 29500.0,
+        2025 => 32000.0,
+        2024 => 30500.0,
     ]);
 });
 
@@ -138,14 +138,14 @@ it('matches an exact calibrated cluster with high confidence', function () {
         ->and($result['cluster_key'])->toBe('calibrated:toyota:hilux-pick-up:base_dx');
 });
 
-it('falls back to intra family cluster with medium confidence when exact match fails', function () {
+it('matches cronos drive pack plus directly after the expanded calibrated rules', function () {
     $version = makeVersion('fiat', 'FIAT', 'cronos', 'CRONOS', '4P 1,3 DRIVE PACK PLUS CVT');
 
     $result = $this->service->matchCluster($version);
 
     expect($result)->not->toBeNull()
-        ->and($result['confidence'])->toBe('medium')
-        ->and($result['cluster_key'])->toBe('intra:fiat:cronos:medio_drive');
+        ->and($result['confidence'])->toBe('high')
+        ->and($result['cluster_key'])->toBe('calibrated:fiat:cronos:medio_drive');
 });
 
 it('falls back to tier strategy with low confidence for non calibrated mercosur models', function () {
@@ -237,6 +237,18 @@ it('predicts hilux srv without applying the global line premium heuristic', func
         ]);
 });
 
+it('predicts hilux srx l slash 24 with the recalibrated srx curve', function () {
+    $version = makeVersion('toyota', 'TOYOTA', 'hilux-pick-up', 'HILUX PICK - UP', 'D/C 2,8 TDi 4X4 SRX 6AT 2024');
+
+    $prediction = $this->service->predict($version, 77921.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 57000.0,
+            2024 => 55000.0,
+        ]);
+});
+
 it('predicts kicks exclusive 1.6 with the new exclusive curve', function () {
     $version = makeVersion('nissan', 'NISSAN', 'kicks', 'KICKS', '5P 1,6 EXCLUSIVE CVT');
 
@@ -251,5 +263,79 @@ it('predicts kicks exclusive 1.6 with the new exclusive curve', function () {
             2021 => 33300.0,
             2020 => 32600.0,
             2019 => 31900.0,
+        ]);
+});
+
+it('predicts fastback 1.3t closer to the revista sample after recalibration', function () {
+    $version = makeVersion('fiat', 'FIAT', 'fastback', 'FASTBACK', '5P 1,3 TURBO 270 AT6');
+
+    $prediction = $this->service->predict($version, 45540.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 34000.0,
+            2024 => 32000.0,
+            2023 => 30000.0,
+            2022 => 28000.0,
+            2021 => 26000.0,
+            2020 => 24000.0,
+            2019 => 22000.0,
+        ]);
+});
+
+it('predicts nivus highline with the positive offset validated by the magazine', function () {
+    $version = makeVersion('volkswagen', 'VOLKSWAGEN', 'nivus', 'NIVUS', '5P 1,0 TSI 200 6AT HIGHLINE');
+
+    $prediction = $this->service->predict($version, 51994.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 36500.0,
+            2024 => 35000.0,
+            2023 => 33800.0,
+            2022 => 32600.0,
+            2021 => 31400.0,
+            2020 => 30200.0,
+            2019 => 29000.0,
+        ]);
+});
+
+it('predicts hr-v lx l slash 25 with the recalibrated lx curve', function () {
+    $version = makeVersion('honda', 'HONDA', 'hr-v', 'HR-V', '5P 1,5 LX CVT 2025');
+
+    $prediction = $this->service->predict($version, 45890.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 41900.0,
+        ]);
+});
+
+it('predicts pulse abarth l slash 25 from the scanned revista sample', function () {
+    $version = makeVersion('fiat', 'FIAT', 'pulse', 'PULSE', '5P 270 TURBO ABARTH 6AT L/25');
+
+    $prediction = $this->service->predict($version, 44750.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['predictions'])->toBe([
+            2025 => 37100.0,
+        ]);
+});
+
+it('predicts zr-v touring style trim through the trg cluster', function () {
+    $version = makeVersion('honda', 'HONDA', 'zr-v', 'ZR-V', '5P 2,0 CVT TRG');
+
+    $prediction = $this->service->predict($version, 59990.0);
+
+    expect($prediction)->not->toBeNull()
+        ->and($prediction['cluster_key'])->toBe('calibrated:honda:zr-v:alto_trg')
+        ->and($prediction['predictions'])->toBe([
+            2025 => 48500.0,
+            2024 => 46500.0,
+            2023 => 44500.0,
+            2022 => 42500.0,
+            2021 => 40500.0,
+            2020 => 38500.0,
+            2019 => 36500.0,
         ]);
 });

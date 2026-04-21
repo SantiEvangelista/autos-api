@@ -2,7 +2,7 @@
 <html lang="es-AR">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Arg Autos — Precios de autos en Argentina</title>
     <meta name="description" content="Consultá gratis el precio de tu auto en Argentina. Valuaciones de más de 60 marcas y 5.800 versiones de 0km y usados con conversión USD/ARS en tiempo real.">
     <meta name="keywords" content="precios autos argentina, valuación automotor, API autos argentina, precios 0km, autos usados argentina, cotización autos, mercado automotor, consulta precios vehículos, API REST automotriz, precios por marca modelo año">
