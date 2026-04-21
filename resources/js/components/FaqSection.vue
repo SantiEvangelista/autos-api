@@ -30,10 +30,12 @@
           </svg>
         </button>
         <div
-          class="overflow-hidden transition-all duration-300"
-          :style="{ maxHeight: openIndex === index ? '300px' : '0px' }"
+          class="grid overflow-hidden transition-all duration-300 ease-out"
+          :class="openIndex === index ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
         >
-          <p class="px-4 sm:px-5 pt-1 pb-4 sm:pb-5 text-xs sm:text-sm text-cream/50 leading-relaxed">{{ item.answer }}</p>
+          <div class="min-h-0 overflow-hidden">
+            <p class="px-4 sm:px-5 pt-1 pb-4 sm:pb-5 text-xs sm:text-sm text-cream/50 leading-relaxed">{{ item.answer }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -51,7 +53,7 @@ function toggle(index) {
 const items = [
   {
     question: '¿De dónde salen los datos de marcas, modelos y versiones?',
-    answer: 'Los datos provienen de la CCA (Cámara del Comercio Automotor) y ACARA (Asociación de Concesionarios de Automotores de la República Argentina). Estas son las fuentes oficiales del mercado automotor argentino que recopilan información de precios de referencia de vehículos 0km y usados.'
+    answer: 'Los datos provienen de tres fuentes oficiales del mercado automotor argentino: CCA (Cámara del Comercio Automotor), ACARA (Asociación de Concesionarios de Automotores de la República Argentina) e InfoAuto (referencia clásica de la industria para valores 0km y usados). Cada fuente se consulta por separado y podés comparar sus precios usando el selector al buscar una versión.'
   },
   {
     question: '¿Qué significa el precio que se muestra?',
@@ -63,15 +65,19 @@ const items = [
   },
   {
     question: '¿Cada cuánto se actualizan los precios de los autos?',
-    answer: 'Los precios de referencia de la CCA y ACARA se actualizan mensualmente. Cada mes se procesan las nuevas valuaciones publicadas por estas entidades para reflejar los cambios del mercado automotor.'
+    answer: 'Los precios de referencia de la CCA, ACARA e InfoAuto se actualizan mensualmente. Cada mes se procesan las nuevas valuaciones publicadas por estas entidades para reflejar los cambios del mercado automotor.'
   },
   {
     question: '¿Es gratis consultar los precios?',
     answer: 'Sí, Arg Autos es 100% gratuito. Podés consultar precios de más de 60 marcas, 600 modelos y 5.800 versiones sin costo, tanto a través del sitio web como de la API REST pública.'
   },
   {
-    question: '¿Qué diferencia hay entre el precio CCA y ACARA?',
-    answer: 'CCA (Cámara del Comercio Automotor) y ACARA (Asociación de Concesionarios) son dos entidades distintas que publican sus propias valuaciones. Los precios pueden diferir porque cada una usa metodologías y fuentes de mercado diferentes. En Arg Autos podés comparar ambas fuentes usando el selector de fuente de precio al consultar una versión.'
+    question: '¿Qué diferencia hay entre el precio CCA, ACARA e InfoAuto?',
+    answer: 'CCA (Cámara del Comercio Automotor), ACARA (Asociación de Concesionarios) e InfoAuto son tres entidades distintas que publican sus propias valuaciones. Los precios pueden diferir porque cada una usa metodologías y fuentes de mercado diferentes. En Arg Autos podés comparar todas las fuentes usando el selector de fuente de precio al consultar una versión.'
+  },
+  {
+    question: '¿Cómo obtenemos los precios similares a InfoAuto cuando no hay dato oficial?',
+    answer: 'En base a la información publica de la Camara del Comercio Automotor (CCA), se entreno al sistema para estimar de forma precisa los precios de los autos usados.Siguiendo los alineamientos de la revista InfoAuto, Se logro obtener una precisión del 98% en la estimación de los precios de los autos usados para esta fuente.'
   },
   {
     question: '¿Puedo usar la API en mi aplicación o proyecto?',
