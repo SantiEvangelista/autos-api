@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchRequest;
+use App\Http\Resources\InfoautoSearchResultResource;
 use App\Http\Resources\SearchResultResource;
 use App\Models\PriceSnapshot;
 use App\Models\Valuation;
 use App\Models\Version;
+use App\Services\InfoautoCatalogReader;
 use App\Services\PriceResolverService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -30,11 +32,19 @@ class SearchController extends Controller
      * - `source=acara`: último snapshot `source=acara`.
      * - `source=infoauto`: snapshot `source=infoauto`
      */
-    public function __invoke(SearchRequest $request): AnonymousResourceCollection
+    public function __invoke(SearchRequest $request, InfoautoCatalogReader $infoautoReader): AnonymousResourceCollection
     {
         $query = $request->validated('q');
         $perPage = $request->validated('per_page', 25);
         $source = $request->validated('source', 'cca');
+
+        if ($source === 'infoauto_v2') {
+            $paginated = $infoautoReader->search($query, $perPage);
+            $paginated->load('priceHistory');
+
+            return InfoautoSearchResultResource::collection($paginated);
+        }
+
         $terms = preg_split('/\s+/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
 
         [$priceSub, $yearSub, $originSub, $rawArsSub] = $this->referenceSubqueries($source);
