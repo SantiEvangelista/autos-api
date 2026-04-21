@@ -10,7 +10,6 @@ use App\Models\PriceSnapshot;
 use App\Models\Valuation;
 use App\Models\Version;
 use App\Services\InfoautoCatalogReader;
-use App\Services\PriceResolverService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
@@ -21,16 +20,12 @@ class SearchController extends Controller
     /**
      * Buscar versiones, modelos y marcas.
      *
-     * Búsqueda full-text e insensible a mayúsculas sobre nombres de versiones, modelos y marcas.
-     * Retorna resultados paginados con la información de marca, modelo y versión aplanada en cada resultado.
+     * Búsqueda full-text insensible a mayúsculas. Shape **bifurcado por source**:
      *
-     * El término de búsqueda debe tener al menos 2 caracteres.
-     *
-     * ## Parámetros
-     *
-     * - `source=cca` (default): referencia desde `valuations` (CCA).
-     * - `source=acara`: último snapshot `source=acara`.
-     * - `source=infoauto`: snapshot `source=infoauto`
+     * - `source=cca` (default) → shape aplanado con `version_id` desde `valuations`.
+     * - `source=acara` → shape aplanado con `version_id` desde `price_snapshots source=acara`.
+     * - `source=infoauto` → shape con `external_id` (`ia_<id>`) desde el read model InfoAuto
+     *   (`infoauto_catalog` + `infoauto_price_history`). Incluye `source_refs` con `codia` y `product_id`.
      */
     public function __invoke(SearchRequest $request, InfoautoCatalogReader $infoautoReader): AnonymousResourceCollection
     {
@@ -38,7 +33,7 @@ class SearchController extends Controller
         $perPage = $request->validated('per_page', 25);
         $source = $request->validated('source', 'cca');
 
-        if ($source === 'infoauto_v2') {
+        if ($source === 'infoauto') {
             $paginated = $infoautoReader->search($query, $perPage);
             $paginated->load('priceHistory');
 
@@ -47,7 +42,7 @@ class SearchController extends Controller
 
         $terms = preg_split('/\s+/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
 
-        [$priceSub, $yearSub, $originSub, $rawArsSub] = $this->referenceSubqueries($source);
+        [$priceSub, $yearSub, $rawArsSub] = $this->referenceSubqueries($source);
 
         $builder = Version::query()
             ->with(['carModel.brand'])
@@ -56,10 +51,6 @@ class SearchController extends Controller
             ->select(['versions.*'])
             ->addSelect(['reference_price' => $priceSub])
             ->addSelect(['reference_year' => $yearSub]);
-
-        if ($originSub !== null) {
-            $builder->addSelect(['reference_origin' => $originSub]);
-        }
 
         if ($rawArsSub !== null) {
             $builder->addSelect(['reference_raw_ars_thousands' => $rawArsSub]);
@@ -80,7 +71,10 @@ class SearchController extends Controller
     }
 
     /**
-     * @return array{price: \Illuminate\Database\Eloquent\Builder, year: \Illuminate\Database\Eloquent\Builder, origin: ?\Illuminate\Database\Eloquent\Builder, raw_ars: ?\Illuminate\Database\Eloquent\Builder}
+     * Subqueries para los shapes de `source=cca` y `source=acara`.
+     * `source=infoauto` se maneja por separado via `InfoautoCatalogReader`.
+     *
+     * @return array{0: \Illuminate\Database\Eloquent\Builder, 1: \Illuminate\Database\Eloquent\Builder, 2: ?\Illuminate\Database\Eloquent\Builder}
      */
     private function referenceSubqueries(string $source): array
     {
@@ -97,77 +91,34 @@ class SearchController extends Controller
                 ->orderBy('year', 'desc')
                 ->limit(1);
 
-            return [$price, $year, null, null];
+            return [$price, $year, null];
         }
 
-        if ($source === 'acara') {
-            $price = PriceSnapshot::select('price')
-                ->whereColumn('version_id', 'versions.id')
-                ->where('source', 'acara')
-                ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
-                ->orderBy('year', 'desc')
-                ->orderBy('recorded_at', 'desc')
-                ->limit(1);
-
-            $year = PriceSnapshot::select('year')
-                ->whereColumn('version_id', 'versions.id')
-                ->where('source', 'acara')
-                ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
-                ->orderBy('year', 'desc')
-                ->orderBy('recorded_at', 'desc')
-                ->limit(1);
-
-            $rawArs = PriceSnapshot::select('raw_price_ars_thousands')
-                ->whereColumn('version_id', 'versions.id')
-                ->where('source', 'acara')
-                ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
-                ->orderBy('year', 'desc')
-                ->orderBy('recorded_at', 'desc')
-                ->limit(1);
-
-            return [$price, $year, null, $rawArs];
-        }
-
-        // source === 'infoauto': real feat > predicted
-        $hito = PriceResolverService::INFOAUTO_FEAT_DATE;
-        $rank = "CASE WHEN source='infoauto' AND recorded_at >= ? THEN 0 ELSE 1 END";
-
+        // source === 'acara'
         $price = PriceSnapshot::select('price')
             ->whereColumn('version_id', 'versions.id')
-            ->whereIn('source', ['infoauto', 'infoauto_predicted'])
+            ->where('source', 'acara')
             ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
             ->orderBy('year', 'desc')
-            ->orderByRaw($rank, [$hito])
             ->orderBy('recorded_at', 'desc')
             ->limit(1);
 
         $year = PriceSnapshot::select('year')
             ->whereColumn('version_id', 'versions.id')
-            ->whereIn('source', ['infoauto', 'infoauto_predicted'])
+            ->where('source', 'acara')
             ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
             ->orderBy('year', 'desc')
-            ->orderByRaw($rank, [$hito])
-            ->orderBy('recorded_at', 'desc')
-            ->limit(1);
-
-        $origin = PriceSnapshot::selectRaw("CASE WHEN source='infoauto' AND recorded_at >= ? THEN 'real' ELSE 'predicted' END", [$hito])
-            ->whereColumn('version_id', 'versions.id')
-            ->whereIn('source', ['infoauto', 'infoauto_predicted'])
-            ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
-            ->orderBy('year', 'desc')
-            ->orderByRaw($rank, [$hito])
             ->orderBy('recorded_at', 'desc')
             ->limit(1);
 
         $rawArs = PriceSnapshot::select('raw_price_ars_thousands')
             ->whereColumn('version_id', 'versions.id')
-            ->whereIn('source', ['infoauto', 'infoauto_predicted'])
+            ->where('source', 'acara')
             ->orderByRaw('CASE WHEN year = 0 THEN 0 ELSE 1 END')
             ->orderBy('year', 'desc')
-            ->orderByRaw($rank, [$hito])
             ->orderBy('recorded_at', 'desc')
             ->limit(1);
 
-        return [$price, $year, $origin, $rawArs];
+        return [$price, $year, $rawArs];
     }
 }

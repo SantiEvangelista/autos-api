@@ -7,25 +7,26 @@ it('returns 422 when source is unknown', function () {
         ->assertJsonValidationErrors('source');
 });
 
-it('accepts source=infoauto_v2', function () {
+it('returns 422 when source=infoauto_v2 (alias removed in Fase 4a)', function () {
     $response = $this->getJson('/api/v1/search?q=toyota&source=infoauto_v2');
 
-    $response->assertOk();
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors('source');
 });
 
-it('still accepts source=infoauto for backwards compatibility', function () {
+it('accepts source=infoauto (read model)', function () {
     $response = $this->getJson('/api/v1/search?q=toyota&source=infoauto');
 
     $response->assertOk();
 });
 
-it('still accepts source=cca', function () {
+it('accepts source=cca', function () {
     $response = $this->getJson('/api/v1/search?q=toyota&source=cca');
 
     $response->assertOk();
 });
 
-it('still accepts source=acara', function () {
+it('accepts source=acara', function () {
     $response = $this->getJson('/api/v1/search?q=toyota&source=acara');
 
     $response->assertOk();

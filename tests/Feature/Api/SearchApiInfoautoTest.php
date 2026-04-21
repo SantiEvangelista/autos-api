@@ -23,10 +23,10 @@ function seedCatalog(array $attrs = []): InfoautoCatalog
     return $catalog;
 }
 
-it('returns infoauto_v2 results from catalog not from price snapshots', function () {
+it('returns infoauto results from catalog read model', function () {
     seedCatalog();
 
-    $response = $this->getJson('/api/v1/search?q=peugeot&source=infoauto_v2');
+    $response = $this->getJson('/api/v1/search?q=peugeot&source=infoauto');
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -38,12 +38,12 @@ it('returns infoauto_v2 results from catalog not from price snapshots', function
 });
 
 it('returns separate rows for peugeot 2008 variants', function () {
-    // Anti-regresión bug apilado
+    // Anti-regresión bug apilado del matcher legacy
     seedCatalog(['codia' => 'c1', 'version_name_raw' => '2008 1.0 T 200 ACTIVE CVT']);
     seedCatalog(['codia' => 'c2', 'version_name_raw' => '2008 1.0 T 200 ALLURE CVT']);
     seedCatalog(['codia' => 'c3', 'version_name_raw' => '2008 1.0 T 200 GT CVT']);
 
-    $response = $this->getJson('/api/v1/search?q=peugeot 2008&source=infoauto_v2');
+    $response = $this->getJson('/api/v1/search?q=peugeot 2008&source=infoauto');
 
     $response->assertOk()->assertJsonCount(3, 'data');
     $externalIds = collect($response->json('data'))->pluck('external_id')->all();
@@ -53,7 +53,7 @@ it('returns separate rows for peugeot 2008 variants', function () {
 it('shows exact raw text for version', function () {
     seedCatalog(['version_name_raw' => '208 L/24 1.6 ALLURE AT']);
 
-    $response = $this->getJson('/api/v1/search?q=208 allure&source=infoauto_v2');
+    $response = $this->getJson('/api/v1/search?q=208 allure&source=infoauto');
 
     $response->assertOk()
         ->assertJsonPath('data.0.version', '208 L/24 1.6 ALLURE AT');
@@ -62,17 +62,9 @@ it('shows exact raw text for version', function () {
 it('returns source_refs with codia when available', function () {
     seedCatalog(['codia' => 'c-refs-1']);
 
-    $response = $this->getJson('/api/v1/search?q=peugeot&source=infoauto_v2');
+    $response = $this->getJson('/api/v1/search?q=peugeot&source=infoauto');
 
     $response->assertOk()
         ->assertJsonPath('data.0.source_refs.codia', 'c-refs-1')
         ->assertJsonPath('data.0.source_refs.product_id', null);
-});
-
-it('does not affect source=infoauto legacy behavior', function () {
-    // Este test solo asegura que source=infoauto sigue funcionando sin tocar nada nuevo.
-    // No seedea infoauto_catalog; solo verifica que endpoint responde 200 y no colapsa.
-    $response = $this->getJson('/api/v1/search?q=toyota&source=infoauto');
-
-    $response->assertOk();
 });

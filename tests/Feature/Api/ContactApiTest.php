@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
     config(['app.contact_recipient' => 'test@example.com']);
@@ -10,12 +9,13 @@ beforeEach(function () {
 
 function validContactPayload(array $overrides = []): array
 {
-    return array_merge([
+    return [
         'name' => 'Juan Pérez',
         'email' => 'juan@example.com',
         'message' => 'Hola, quiero saber más sobre la API.',
         'cf_turnstile_response' => 'fake-token',
-    ], $overrides);
+        ...$overrides,
+    ];
 }
 
 function fakeTurnstileSuccess(): void
