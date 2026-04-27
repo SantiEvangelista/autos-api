@@ -68,3 +68,49 @@ it('returns source_refs with codia when available', function () {
         ->assertJsonPath('data.0.source_refs.codia', 'c-refs-1')
         ->assertJsonPath('data.0.source_refs.product_id', null);
 });
+
+it('returns price in USD computed on-the-fly when price_usd is null and currency=USD', function () {
+    $catalog = InfoautoCatalog::factory()->create([
+        'codia' => 'codia-search-usd',
+        'brand_name' => 'VOLKSWAGEN',
+        'model_name' => 'Gol',
+        'version_name_raw' => 'GOL 1.4 3 P POWER',
+    ]);
+    InfoautoPriceHistory::create([
+        'infoauto_catalog_id' => $catalog->id,
+        'year' => 2015,
+        'price_ars_thousands' => 10200,
+        'origin' => 'real',
+        'source' => 'test',
+        'recorded_at' => '2026-04-27',
+    ]);
+
+    \Illuminate\Support\Facades\Cache::put('exchange_rate:usd_ars_oficial', 1000.0, 60);
+
+    $response = $this->getJson('/api/v1/search?q=GOL+POWER&source=infoauto&currency=USD');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.price', 10200)
+        ->assertJsonPath('data.0.price_raw_ars', 10200000);
+});
+
+it('returns price in ARS literal when currency=ARS', function () {
+    $catalog = InfoautoCatalog::factory()->create([
+        'codia' => 'codia-search-ars',
+        'version_name_raw' => 'GOL 1.4 3 P POWER',
+    ]);
+    InfoautoPriceHistory::create([
+        'infoauto_catalog_id' => $catalog->id,
+        'year' => 2015,
+        'price_ars_thousands' => 10200,
+        'origin' => 'real',
+        'source' => 'test',
+        'recorded_at' => '2026-04-27',
+    ]);
+
+    $response = $this->getJson('/api/v1/search?q=GOL+POWER&source=infoauto&currency=ARS');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.price', 10200000)
+        ->assertJsonPath('data.0.price_raw_ars', 10200000);
+});

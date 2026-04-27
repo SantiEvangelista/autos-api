@@ -80,3 +80,48 @@ it('includes meta with source_refs', function () {
         ->assertJsonPath('meta.source_refs.codia', 'codia-endpoint')
         ->assertJsonPath('meta.source_refs.product_id', null);
 });
+
+it('returns price in ARS when currency=ARS even if price_usd is null in DB', function () {
+    $catalog = seedCatalogWithPrices(); // price_ars_thousands=44740, price_usd=null
+
+    $response = $this->getJson('/api/v1/infoauto/catalog/' . $catalog->external_id . '/prices?currency=ARS');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.price', 44740000)
+        ->assertJsonPath('data.0.price_ars_thousands', '44740.00')
+        ->assertJsonPath('meta.currency', 'ARS');
+});
+
+it('returns price in USD computed on-the-fly when price_usd is null in DB', function () {
+    $catalog = seedCatalogWithPrices();
+
+    \Illuminate\Support\Facades\Cache::put('exchange_rate:usd_ars_oficial', 1000.0, 60);
+
+    $response = $this->getJson('/api/v1/infoauto/catalog/' . $catalog->external_id . '/prices?currency=USD');
+
+    // ars_thousands=44740 → 44_740_000 ARS / 1000 = 44740 USD
+    $response->assertOk()
+        ->assertJsonPath('data.0.price', 44740)
+        ->assertJsonPath('meta.currency', 'USD');
+});
+
+it('uses DB price_usd when present and currency=USD (no on-the-fly conversion)', function () {
+    $catalog = InfoautoCatalog::factory()->create(['codia' => 'codia-with-usd']);
+    InfoautoPriceHistory::create([
+        'infoauto_catalog_id' => $catalog->id,
+        'year' => 0,
+        'price_ars_thousands' => 44740,
+        'price_usd' => 32000,        // valor explícito en DB
+        'exchange_rate' => 1397.5,
+        'origin' => 'real',
+        'source' => 'test',
+        'recorded_at' => '2026-04-10',
+    ]);
+
+    \Illuminate\Support\Facades\Cache::put('exchange_rate:usd_ars_oficial', 1500.0, 60);
+
+    $response = $this->getJson('/api/v1/infoauto/catalog/' . $catalog->external_id . '/prices?currency=USD');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.price', 32000); // usa el USD de DB, no recalcula con TC actual
+});
