@@ -4,6 +4,12 @@ use App\Models\InfoautoCatalog;
 use App\Models\InfoautoPriceHistory;
 use App\Services\InfoautoCatalogReader;
 
+beforeEach(function () {
+    // Generic source identifiers for the dedup priority. Tests verify behavior,
+    // not specific source names. Production identifiers come from env config.
+    config()->set('infoauto-sources.priority', ['primary_source', 'secondary_source']);
+});
+
 it('returns empty collection when search has no matches', function () {
     InfoautoCatalog::factory()->create();
 
@@ -40,8 +46,7 @@ it('matches by version name ilike', function () {
     expect($results->items())->toHaveCount(1);
 });
 
-it('returns one row per codia not consolidated', function () {
-    // Anti-regresión Peugeot 2008
+it('returns one row per distinct version', function () {
     InfoautoCatalog::factory()->create(['codia' => 'c1', 'brand_name' => 'PEUGEOT', 'model_name' => '2008', 'version_name_raw' => '2008 1.0 T 200 ACTIVE CVT']);
     InfoautoCatalog::factory()->create(['codia' => 'c2', 'brand_name' => 'PEUGEOT', 'model_name' => '2008', 'version_name_raw' => '2008 1.0 T 200 ALLURE CVT']);
     InfoautoCatalog::factory()->create(['codia' => 'c3', 'brand_name' => 'PEUGEOT', 'model_name' => '2008', 'version_name_raw' => '2008 1.0 T 200 GT CVT']);
@@ -54,7 +59,7 @@ it('returns one row per codia not consolidated', function () {
     expect($codias)->toContain('c1', 'c2', 'c3');
 });
 
-it('preserves raw version text from infoauto', function () {
+it('preserves raw version text', function () {
     InfoautoCatalog::factory()->create(['brand_name' => 'PEUGEOT', 'model_name' => '208', 'version_name_raw' => '208 L/24 1.6 ALLURE AT']);
 
     $reader = app(InfoautoCatalogReader::class);
@@ -88,6 +93,100 @@ it('finds catalog entry by valid external id', function () {
         ->and($found->id)->toBe($catalog->id);
 });
 
+it('deduplicates rows sharing canonical key by source priority', function () {
+    InfoautoCatalog::factory()->create([
+        'source_system' => 'secondary_source',
+        'brand_name' => 'BRAND',
+        'model_name' => 'MODEL',
+        'version_name_raw' => 'TRIM A',
+        'years' => [0],
+    ]);
+    $winner = InfoautoCatalog::factory()->create([
+        'source_system' => 'primary_source',
+        'brand_name' => 'BRAND',
+        'model_name' => 'MODEL',
+        'version_name_raw' => 'TRIM A',
+        'years' => [0, 2024, 2025],
+    ]);
+
+    $reader = app(InfoautoCatalogReader::class);
+    $results = $reader->search('brand model');
+
+    expect($results->items())->toHaveCount(1)
+        ->and($results->items()[0]->id)->toBe($winner->id)
+        ->and($results->items()[0]->source_system)->toBe('primary_source');
+});
+
+it('deduplicates rows that differ only in model_name casing or whitespace', function () {
+    InfoautoCatalog::factory()->create([
+        'source_system' => 'secondary_source',
+        'brand_name' => 'BRAND',
+        'model_name' => 'COMPACT-X',
+        'version_name_raw' => 'COMPACT-X 1.0 TRIM',
+        'years' => [0],
+    ]);
+    InfoautoCatalog::factory()->create([
+        'source_system' => 'primary_source',
+        'brand_name' => 'BRAND',
+        'model_name' => 'Compact-X',
+        'version_name_raw' => 'COMPACT-X 1.0 TRIM',
+        'years' => [0, 2024, 2025],
+    ]);
+
+    $reader = app(InfoautoCatalogReader::class);
+    $results = $reader->search('brand compact-x');
+
+    expect($results->items())->toHaveCount(1)
+        ->and($results->items()[0]->source_system)->toBe('primary_source');
+});
+
+it('breaks ties within the same source by years history length', function () {
+    $richer = InfoautoCatalog::factory()->create([
+        'source_system' => 'primary_source',
+        'brand_name' => 'BRAND',
+        'model_name' => 'MODEL',
+        'version_name_raw' => 'TRIM B',
+        'years' => [2017, 2018, 2019, 2020, 2021],
+        'last_seen_at' => now()->subDays(7),
+    ]);
+    InfoautoCatalog::factory()->create([
+        'source_system' => 'primary_source',
+        'brand_name' => 'BRAND',
+        'model_name' => 'MODEL',
+        'version_name_raw' => 'TRIM B',
+        'years' => [2017],
+        'last_seen_at' => now(),
+    ]);
+
+    $reader = app(InfoautoCatalogReader::class);
+    $results = $reader->search('brand model');
+
+    expect($results->items())->toHaveCount(1)
+        ->and($results->items()[0]->id)->toBe($richer->id);
+});
+
+it('does not collapse rows with empty version_name_raw', function () {
+    InfoautoCatalog::factory()->create([
+        'source_system' => 'secondary_source',
+        'codia' => 'codia-A',
+        'brand_name' => 'BRAND',
+        'model_name' => 'MODEL',
+        'version_name_raw' => '',
+    ]);
+    InfoautoCatalog::factory()->create([
+        'source_system' => 'secondary_source',
+        'codia' => 'codia-B',
+        'brand_name' => 'BRAND',
+        'model_name' => 'MODEL',
+        'version_name_raw' => '',
+    ]);
+
+    $reader = app(InfoautoCatalogReader::class);
+    $results = $reader->search('brand model');
+
+    expect($results->items())->toHaveCount(2);
+});
+
 it('returns price history entries for an external id', function () {
     $catalog = InfoautoCatalog::factory()->create();
     InfoautoPriceHistory::create([
@@ -95,7 +194,7 @@ it('returns price history entries for an external id', function () {
         'year' => 0,
         'price_ars_thousands' => 44740,
         'origin' => 'real',
-        'source' => 'autazo',
+        'source' => 'primary_source',
         'recorded_at' => '2026-04-10',
     ]);
 
