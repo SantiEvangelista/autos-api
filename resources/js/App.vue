@@ -10,8 +10,8 @@
       <!-- Nav -->
       <nav class="flex items-center justify-between py-4 sm:py-6">
         <div class="flex items-center gap-2.5">
-          <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gold animate-pulse"></div>
-          <span class="font-mono text-[11px] sm:text-xs text-cream/50 tracking-wider uppercase">v1.0</span>
+          
+          
         </div>
         <div class="flex items-center gap-4 sm:gap-5">
           <a href="/docs/api" class="font-mono text-[11px] sm:text-xs text-cream/40 active:text-gold hover:text-gold transition-colors duration-300">

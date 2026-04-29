@@ -23,6 +23,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/app/Console/Commands/ImportVehicles.php
+/app/Console/Commands/*
+/tests/Feature/Commands/*
 .env.testing
 /docs
+/config/version_mapper.php
+/config/mapper_rules.php
+/config/infoauto-predictions.php
